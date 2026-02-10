@@ -37,7 +37,7 @@ const CategoryBar = ({ selectedCategory, onSelect, categories }: CategoryBarProp
             onClick={() => onSelect(null)}
             className="flex-shrink-0 flex flex-col items-center gap-2 transition-all"
           >
-            <div className={`w-[72px] h-[72px] rounded-full flex items-center justify-center text-xl border-2 transition-all ${
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg border-2 transition-all ${
               !selectedCategory
                 ? "bg-primary text-primary-foreground border-primary shadow-soft scale-105"
                 : "bg-secondary border-border hover:border-primary/40"
@@ -54,7 +54,7 @@ const CategoryBar = ({ selectedCategory, onSelect, categories }: CategoryBarProp
               onClick={() => onSelect(cat.name === selectedCategory ? null : cat.name)}
               className="flex-shrink-0 flex flex-col items-center gap-2 transition-all"
             >
-              <div className={`w-[72px] h-[72px] rounded-full overflow-hidden border-2 transition-all ${
+              <div className={`w-14 h-14 rounded-full overflow-hidden border-2 transition-all ${
                 selectedCategory === cat.name
                   ? "border-primary shadow-soft scale-105"
                   : "border-border hover:border-primary/40"
