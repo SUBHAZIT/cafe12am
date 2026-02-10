@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Store, Truck, BarChart3, Tag, LogOut, Plus, Edit, Trash2, ToggleLeft, ToggleRight, Sparkles, ChevronDown, ChevronUp, User } from "lucide-react";
+import { Users, Store, Truck, BarChart3, Tag, LogOut, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, User, Phone, Mail, MapPin, Building, CreditCard, Clock, Package } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
@@ -14,8 +14,11 @@ const AdminPanel = () => {
   const [tab, setTab] = useState<Tab>("overview");
   const [merchants, setMerchants] = useState<any[]>([]);
   const [riders, setRiders] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [showCreateMerchant, setShowCreateMerchant] = useState(false);
   const [showCreateRider, setShowCreateRider] = useState(false);
   const [showCreateCoupon, setShowCreateCoupon] = useState(false);
@@ -23,22 +26,25 @@ const AdminPanel = () => {
   const [newRider, setNewRider] = useState({ email: "", password: "", full_name: "", phone: "" });
   const [newCoupon, setNewCoupon] = useState({ code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0, description: "" });
   const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    const [merchantsRes, ridersRes, ordersRes, couponsRes] = await Promise.all([
-      supabase.from("user_roles").select("user_id, role, profiles!inner(*)").eq("role", "merchant"),
-      supabase.from("user_roles").select("user_id, role, profiles!inner(*)").eq("role", "delivery_partner"),
-      supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(50),
-      supabase.from("coupons").select("*").order("created_at", { ascending: false }),
-    ]);
-    if (merchantsRes.data) setMerchants(merchantsRes.data);
-    if (ridersRes.data) setRiders(ridersRes.data);
-    if (ordersRes.data) setOrders(ordersRes.data);
-    if (couponsRes.data) setCoupons(couponsRes.data);
+    setDataLoading(true);
+    const { data, error } = await supabase.functions.invoke("admin-fetch-users");
+    if (error) {
+      toast({ title: "Error loading data", description: error.message, variant: "destructive" });
+    } else if (data) {
+      setMerchants(data.merchants || []);
+      setRiders(data.riders || []);
+      setCustomers(data.customers || []);
+      setOrders(data.orders || []);
+      setCoupons(data.coupons || []);
+    }
+    setDataLoading(false);
   };
 
   const createMerchant = async () => {
@@ -47,8 +53,7 @@ const AdminPanel = () => {
       return;
     }
     setLoading(true);
-    // Use edge function to create merchant
-    const { data, error } = await supabase.functions.invoke("create-staff", {
+    const { error } = await supabase.functions.invoke("create-staff", {
       body: { ...newMerchant, role: "merchant" },
     });
     setLoading(false);
@@ -68,7 +73,7 @@ const AdminPanel = () => {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.functions.invoke("create-staff", {
+    const { error } = await supabase.functions.invoke("create-staff", {
       body: { ...newRider, role: "delivery_partner" },
     });
     setLoading(false);
@@ -110,9 +115,173 @@ const AdminPanel = () => {
     { id: "overview" as Tab, label: "OVERVIEW", icon: BarChart3 },
     { id: "merchants" as Tab, label: "MERCHANTS", icon: Store },
     { id: "riders" as Tab, label: "RIDERS", icon: Truck },
-    { id: "orders" as Tab, label: "ORDERS", icon: Tag },
+    { id: "customers" as Tab, label: "CUSTOMERS", icon: Users },
+    { id: "orders" as Tab, label: "ORDERS", icon: Package },
     { id: "coupons" as Tab, label: "COUPONS", icon: Tag },
   ];
+
+  const totalRevenue = orders.reduce((a: number, o: any) => a + Number(o.total_amount || 0), 0);
+
+  const DetailRow = ({ icon: Icon, label, value }: { icon: any; label: string; value: string | null | undefined }) => {
+    if (!value) return null;
+    return (
+      <div className="flex items-center gap-2 text-sm">
+        <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+        <span className="text-muted-foreground">{label}:</span>
+        <span className="text-foreground font-medium truncate">{value}</span>
+      </div>
+    );
+  };
+
+  const UserCard = ({ user, type }: { user: any; type: string }) => {
+    const isExpanded = expandedUser === user.id;
+    return (
+      <div className="bg-card rounded-2xl shadow-card overflow-hidden">
+        <div
+          className="p-4 flex items-center justify-between cursor-pointer"
+          onClick={() => setExpandedUser(isExpanded ? null : user.id)}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <User className="w-5 h-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-heading font-bold text-sm uppercase tracking-wide truncate">{user.full_name || "N/A"}</p>
+              <p className="text-xs text-muted-foreground truncate">{user.email || user.phone || "No contact"}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className={`text-xs font-heading font-bold px-2 py-1 rounded-full uppercase ${user.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+              {user.is_active ? "ACTIVE" : "INACTIVE"}
+            </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleActive(user.id, user.is_active); }}
+              className={`p-1.5 rounded-full ${user.is_active ? "text-green-500" : "text-muted-foreground"}`}
+            >
+              {user.is_active ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+            </button>
+            {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+          </div>
+        </div>
+
+        {isExpanded && (
+          <div className="px-4 pb-4 space-y-4 border-t border-border pt-3">
+            {/* Personal Info */}
+            <div>
+              <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">PERSONAL INFO</p>
+              <div className="space-y-1.5">
+                <DetailRow icon={User} label="Name" value={user.full_name} />
+                <DetailRow icon={Mail} label="Email" value={user.email} />
+                <DetailRow icon={Phone} label="Phone" value={user.phone} />
+                <DetailRow icon={MapPin} label="Address" value={user.address} />
+                {user.emergency_contact && <DetailRow icon={Phone} label="Emergency" value={user.emergency_contact} />}
+              </div>
+            </div>
+
+            {/* Merchant Settings */}
+            {type === "merchant" && user.merchant_settings && (
+              <div>
+                <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">STORE SETTINGS</p>
+                <div className="space-y-1.5">
+                  <DetailRow icon={Store} label="Store" value={user.merchant_settings.store_name} />
+                  <DetailRow icon={Clock} label="Hours" value={`${user.merchant_settings.opening_time} - ${user.merchant_settings.closing_time}`} />
+                  <div className="flex items-center gap-2 text-sm">
+                    <Store className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Status:</span>
+                    <span className={`font-bold ${user.merchant_settings.is_open ? "text-green-600" : "text-red-500"}`}>
+                      {user.merchant_settings.is_open ? "OPEN" : "CLOSED"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Delivery Settings */}
+            {type === "rider" && user.delivery_settings && (
+              <div>
+                <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">DELIVERY SETTINGS</p>
+                <div className="space-y-1.5">
+                  <DetailRow icon={Truck} label="Vehicle" value={user.delivery_settings.vehicle_type} />
+                  <div className="flex items-center gap-2 text-sm">
+                    <Truck className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Status:</span>
+                    <span className={`font-bold ${user.delivery_settings.is_online ? "text-green-600" : "text-red-500"}`}>
+                      {user.delivery_settings.is_online ? "ONLINE" : "OFFLINE"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Saved Addresses */}
+            {user.saved_addresses && user.saved_addresses.length > 0 && (
+              <div>
+                <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">SAVED ADDRESSES</p>
+                <div className="space-y-2">
+                  {user.saved_addresses.map((addr: any) => (
+                    <div key={addr.id} className="bg-secondary/50 rounded-xl p-2.5 text-sm">
+                      <span className="font-bold text-xs uppercase tracking-wider">{addr.label}</span>
+                      {addr.is_default && <span className="ml-2 text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">DEFAULT</span>}
+                      <p className="text-muted-foreground mt-0.5">{addr.address}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bank Details */}
+            {user.bank_details && user.bank_details.length > 0 && (
+              <div>
+                <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">BANK DETAILS</p>
+                <div className="space-y-2">
+                  {user.bank_details.map((bank: any) => (
+                    <div key={bank.id} className="bg-secondary/50 rounded-xl p-2.5 text-sm space-y-1">
+                      <DetailRow icon={CreditCard} label="Bank" value={bank.bank_name} />
+                      <DetailRow icon={CreditCard} label="A/C" value={bank.account_number} />
+                      <DetailRow icon={CreditCard} label="Holder" value={bank.account_holder_name} />
+                      <DetailRow icon={Building} label="IFSC" value={bank.ifsc_code} />
+                      {bank.upi_id && <DetailRow icon={CreditCard} label="UPI" value={bank.upi_id} />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground">Joined: {new Date(user.created_at).toLocaleDateString()}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const CreateForm = ({ fields, values, onChange, onSubmit, label }: any) => (
+    <div className="bg-card rounded-2xl p-6 shadow-card mb-6 space-y-3">
+      {fields.map((f: any) => (
+        <Input
+          key={f.key}
+          placeholder={f.placeholder}
+          type={f.type || "text"}
+          value={values[f.key]}
+          onChange={(e) => onChange({ ...values, [f.key]: e.target.value })}
+          className="rounded-xl bg-secondary border-0"
+        />
+      ))}
+      <Button onClick={onSubmit} disabled={loading} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
+        {loading ? "CREATING..." : `CREATE ${label}`}
+      </Button>
+    </div>
+  );
+
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground uppercase tracking-wider">Loading admin data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,7 +305,7 @@ const AdminPanel = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -147,6 +316,10 @@ const AdminPanel = () => {
             >
               <t.icon className="w-4 h-4" />
               {t.label}
+              {t.id === "merchants" && <span className="bg-primary-foreground/20 px-1.5 py-0.5 rounded-full text-[10px]">{merchants.length}</span>}
+              {t.id === "riders" && <span className="bg-primary-foreground/20 px-1.5 py-0.5 rounded-full text-[10px]">{riders.length}</span>}
+              {t.id === "customers" && <span className="bg-primary-foreground/20 px-1.5 py-0.5 rounded-full text-[10px]">{customers.length}</span>}
+              {t.id === "orders" && <span className="bg-primary-foreground/20 px-1.5 py-0.5 rounded-full text-[10px]">{orders.length}</span>}
             </button>
           ))}
         </div>
@@ -155,10 +328,10 @@ const AdminPanel = () => {
         {tab === "overview" && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "TOTAL ORDERS", value: orders.length, icon: Tag },
+              { label: "TOTAL ORDERS", value: orders.length, icon: Package },
               { label: "MERCHANTS", value: merchants.length, icon: Store },
               { label: "RIDERS", value: riders.length, icon: Truck },
-              { label: "REVENUE", value: `₹${orders.reduce((a, o) => a + Number(o.total_amount || 0), 0)}`, icon: BarChart3 },
+              { label: "CUSTOMERS", value: customers.length, icon: Users },
             ].map((stat) => (
               <div key={stat.label} className="bg-card rounded-2xl p-6 shadow-card relative overflow-hidden">
                 <div className="absolute top-2 right-2 w-2 h-2 rotate-45 border border-primary/20" />
@@ -167,6 +340,11 @@ const AdminPanel = () => {
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</p>
               </div>
             ))}
+            <div className="col-span-2 md:col-span-4 bg-card rounded-2xl p-6 shadow-card">
+              <BarChart3 className="w-6 h-6 text-primary mb-2" />
+              <p className="font-heading text-2xl font-bold text-foreground">₹{totalRevenue.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">TOTAL REVENUE</p>
+            </div>
           </div>
         )}
 
@@ -174,39 +352,27 @@ const AdminPanel = () => {
         {tab === "merchants" && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="font-heading text-xl font-bold uppercase tracking-tight">MERCHANTS</h2>
+              <h2 className="font-heading text-xl font-bold uppercase tracking-tight">MERCHANTS ({merchants.length})</h2>
               <Button onClick={() => setShowCreateMerchant(!showCreateMerchant)} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
-                <Plus className="w-4 h-4 mr-1" /> CREATE MERCHANT
+                <Plus className="w-4 h-4 mr-1" /> CREATE
               </Button>
             </div>
-
             {showCreateMerchant && (
-              <div className="bg-card rounded-2xl p-6 shadow-card mb-6 space-y-3">
-                <Input placeholder="Full Name" value={newMerchant.full_name} onChange={(e) => setNewMerchant({...newMerchant, full_name: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Email" type="email" value={newMerchant.email} onChange={(e) => setNewMerchant({...newMerchant, email: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Password" type="password" value={newMerchant.password} onChange={(e) => setNewMerchant({...newMerchant, password: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Phone" value={newMerchant.phone} onChange={(e) => setNewMerchant({...newMerchant, phone: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Button onClick={createMerchant} disabled={loading} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
-                  {loading ? "CREATING..." : "CREATE"}
-                </Button>
-              </div>
+              <CreateForm
+                fields={[
+                  { key: "full_name", placeholder: "Full Name" },
+                  { key: "email", placeholder: "Email", type: "email" },
+                  { key: "password", placeholder: "Password", type: "password" },
+                  { key: "phone", placeholder: "Phone" },
+                ]}
+                values={newMerchant}
+                onChange={setNewMerchant}
+                onSubmit={createMerchant}
+                label="MERCHANT"
+              />
             )}
-
             <div className="space-y-3">
-              {merchants.map((m: any) => (
-                <div key={m.user_id} className="bg-card rounded-2xl p-4 shadow-card flex items-center justify-between">
-                  <div>
-                    <p className="font-heading font-bold text-sm uppercase tracking-wide">{(m as any).profiles?.full_name || "N/A"}</p>
-                    <p className="text-xs text-muted-foreground">{(m as any).profiles?.email || (m as any).profiles?.phone}</p>
-                  </div>
-                  <button
-                    onClick={() => toggleActive((m as any).profiles?.id, (m as any).profiles?.is_active)}
-                    className={`p-2 rounded-full ${(m as any).profiles?.is_active ? "text-green-500" : "text-muted-foreground"}`}
-                  >
-                    {(m as any).profiles?.is_active ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
-                  </button>
-                </div>
-              ))}
+              {merchants.map((m: any) => <UserCard key={m.id} user={m} type="merchant" />)}
               {merchants.length === 0 && <p className="text-center text-muted-foreground py-8 uppercase tracking-wider text-sm">NO MERCHANTS YET</p>}
             </div>
           </div>
@@ -216,40 +382,39 @@ const AdminPanel = () => {
         {tab === "riders" && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="font-heading text-xl font-bold uppercase tracking-tight">DELIVERY PARTNERS</h2>
+              <h2 className="font-heading text-xl font-bold uppercase tracking-tight">DELIVERY PARTNERS ({riders.length})</h2>
               <Button onClick={() => setShowCreateRider(!showCreateRider)} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
-                <Plus className="w-4 h-4 mr-1" /> CREATE RIDER
+                <Plus className="w-4 h-4 mr-1" /> CREATE
               </Button>
             </div>
-
             {showCreateRider && (
-              <div className="bg-card rounded-2xl p-6 shadow-card mb-6 space-y-3">
-                <Input placeholder="Full Name" value={newRider.full_name} onChange={(e) => setNewRider({...newRider, full_name: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Email" type="email" value={newRider.email} onChange={(e) => setNewRider({...newRider, email: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Password" type="password" value={newRider.password} onChange={(e) => setNewRider({...newRider, password: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Phone" value={newRider.phone} onChange={(e) => setNewRider({...newRider, phone: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Button onClick={createRider} disabled={loading} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
-                  {loading ? "CREATING..." : "CREATE"}
-                </Button>
-              </div>
+              <CreateForm
+                fields={[
+                  { key: "full_name", placeholder: "Full Name" },
+                  { key: "email", placeholder: "Email", type: "email" },
+                  { key: "password", placeholder: "Password", type: "password" },
+                  { key: "phone", placeholder: "Phone" },
+                ]}
+                values={newRider}
+                onChange={setNewRider}
+                onSubmit={createRider}
+                label="RIDER"
+              />
             )}
-
             <div className="space-y-3">
-              {riders.map((r: any) => (
-                <div key={r.user_id} className="bg-card rounded-2xl p-4 shadow-card flex items-center justify-between">
-                  <div>
-                    <p className="font-heading font-bold text-sm uppercase tracking-wide">{(r as any).profiles?.full_name || "N/A"}</p>
-                    <p className="text-xs text-muted-foreground">{(r as any).profiles?.email || (r as any).profiles?.phone}</p>
-                  </div>
-                  <button
-                    onClick={() => toggleActive((r as any).profiles?.id, (r as any).profiles?.is_active)}
-                    className={`p-2 rounded-full ${(r as any).profiles?.is_active ? "text-green-500" : "text-muted-foreground"}`}
-                  >
-                    {(r as any).profiles?.is_active ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
-                  </button>
-                </div>
-              ))}
+              {riders.map((r: any) => <UserCard key={r.id} user={r} type="rider" />)}
               {riders.length === 0 && <p className="text-center text-muted-foreground py-8 uppercase tracking-wider text-sm">NO RIDERS YET</p>}
+            </div>
+          </div>
+        )}
+
+        {/* Customers */}
+        {tab === "customers" && (
+          <div>
+            <h2 className="font-heading text-xl font-bold uppercase tracking-tight mb-6">CUSTOMERS ({customers.length})</h2>
+            <div className="space-y-3">
+              {customers.map((c: any) => <UserCard key={c.id} user={c} type="customer" />)}
+              {customers.length === 0 && <p className="text-center text-muted-foreground py-8 uppercase tracking-wider text-sm">NO CUSTOMERS YET</p>}
             </div>
           </div>
         )}
@@ -257,22 +422,54 @@ const AdminPanel = () => {
         {/* Orders */}
         {tab === "orders" && (
           <div>
-            <h2 className="font-heading text-xl font-bold uppercase tracking-tight mb-6">ALL ORDERS</h2>
+            <h2 className="font-heading text-xl font-bold uppercase tracking-tight mb-6">ALL ORDERS ({orders.length})</h2>
             <div className="space-y-3">
-              {orders.map((o) => (
-                <div key={o.id} className="bg-card rounded-2xl p-4 shadow-card">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-heading font-bold text-sm uppercase tracking-wide">{o.order_number}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p>
+              {orders.map((o: any) => {
+                const isExpanded = expandedOrder === o.id;
+                return (
+                  <div key={o.id} className="bg-card rounded-2xl shadow-card overflow-hidden">
+                    <div
+                      className="p-4 flex justify-between items-center cursor-pointer"
+                      onClick={() => setExpandedOrder(isExpanded ? null : o.id)}
+                    >
+                      <div>
+                        <p className="font-heading font-bold text-sm uppercase tracking-wide">{o.order_number}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="font-heading font-bold text-primary">₹{o.total_amount}</p>
+                          <span className="text-xs uppercase tracking-wider bg-secondary px-2 py-0.5 rounded-full">{o.status}</span>
+                        </div>
+                        {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-heading font-bold text-primary">₹{o.total_amount}</p>
-                      <span className="text-xs uppercase tracking-wider bg-secondary px-2 py-0.5 rounded-full">{o.status}</span>
-                    </div>
+                    {isExpanded && (
+                      <div className="px-4 pb-4 border-t border-border pt-3 space-y-2 text-sm">
+                        <DetailRow icon={MapPin} label="Address" value={o.delivery_address} />
+                        <DetailRow icon={CreditCard} label="Payment" value={`${o.payment_method} (${o.payment_status})`} />
+                        <div className="flex gap-4 text-xs text-muted-foreground">
+                          <span>Subtotal: ₹{o.subtotal}</span>
+                          <span>Delivery: ₹{o.delivery_fee}</span>
+                          {Number(o.discount) > 0 && <span>Discount: -₹{o.discount}</span>}
+                        </div>
+                        {o.order_items && o.order_items.length > 0 && (
+                          <div>
+                            <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mt-2 mb-1">ITEMS</p>
+                            {o.order_items.map((item: any) => (
+                              <div key={item.id} className="flex justify-between text-xs bg-secondary/50 rounded-lg px-3 py-1.5 mb-1">
+                                <span>{item.item_name} × {item.quantity}</span>
+                                <span className="font-bold">₹{item.total_price}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {o.delivery_notes && <p className="text-xs text-muted-foreground italic">Note: {o.delivery_notes}</p>}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {orders.length === 0 && <p className="text-center text-muted-foreground py-8 uppercase tracking-wider text-sm">NO ORDERS YET</p>}
             </div>
           </div>
@@ -282,12 +479,11 @@ const AdminPanel = () => {
         {tab === "coupons" && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="font-heading text-xl font-bold uppercase tracking-tight">COUPONS</h2>
+              <h2 className="font-heading text-xl font-bold uppercase tracking-tight">COUPONS ({coupons.length})</h2>
               <Button onClick={() => setShowCreateCoupon(!showCreateCoupon)} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
-                <Plus className="w-4 h-4 mr-1" /> CREATE COUPON
+                <Plus className="w-4 h-4 mr-1" /> CREATE
               </Button>
             </div>
-
             {showCreateCoupon && (
               <div className="bg-card rounded-2xl p-6 shadow-card mb-6 space-y-3">
                 <Input placeholder="Coupon Code (e.g. MIDNIGHT20)" value={newCoupon.code} onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})} className="rounded-xl bg-secondary border-0" />
@@ -309,13 +505,16 @@ const AdminPanel = () => {
                 </Button>
               </div>
             )}
-
             <div className="space-y-3">
-              {coupons.map((c) => (
+              {coupons.map((c: any) => (
                 <div key={c.id} className="bg-card rounded-2xl p-4 shadow-card flex items-center justify-between">
                   <div>
                     <p className="font-heading font-bold text-sm uppercase tracking-wide">{c.code}</p>
-                    <p className="text-xs text-muted-foreground">{c.discount_type === "percentage" ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {c.discount_type === "percentage" ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}
+                      {c.min_order_amount > 0 && ` • Min ₹${c.min_order_amount}`}
+                      {c.usage_limit && ` • ${c.used_count}/${c.usage_limit} used`}
+                    </p>
                   </div>
                   <span className={`text-xs font-heading font-bold px-2 py-1 rounded-full uppercase ${c.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                     {c.is_active ? "ACTIVE" : "INACTIVE"}
