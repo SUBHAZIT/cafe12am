@@ -17,11 +17,9 @@ const HeroSection = () => {
           CAFE12AM
         </h1>
         <p className="font-heading text-xl md:text-2xl lg:text-3xl font-medium tracking-widest text-primary-foreground/90 mb-2">
-          INDIA'S MIDNIGHT SNACK DESTINATION
+          CAMPUS'S MIDNIGHT SNACK DESTINATION
         </p>
-        <p className="text-lg md:text-xl text-primary-foreground/80 mb-10 tracking-wider">
-          MIDNIGHT HUNGER SOLVED
-        </p>
+        <p className="text-lg md:text-xl text-primary-foreground/80 mb-10 tracking-wider">MIDNIGHT HUNGER SOLVED</p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
@@ -41,7 +39,12 @@ const HeroSection = () => {
         {/* Scroll indicator */}
         <div className="mt-16 animate-bounce">
           <p className="text-primary-foreground/60 text-sm tracking-widest uppercase mb-2">SCROLL DOWN</p>
-          <svg className="w-6 h-6 mx-auto text-primary-foreground/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-6 h-6 mx-auto text-primary-foreground/60"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
