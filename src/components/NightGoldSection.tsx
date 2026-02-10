@@ -1,4 +1,6 @@
-import { Crown, Truck, Percent, Star } from "lucide-react";
+import { Truck, Percent, Star } from "lucide-react";
+import drinkFrappe from "@/assets/drink-frappe.png";
+import drinkIcedCoffee from "@/assets/drink-iced-coffee.png";
 
 const NightGoldSection = () => {
   return (
@@ -39,31 +41,24 @@ const NightGoldSection = () => {
         </svg>
       </div>
 
-      {/* Floating gold coins - top left */}
-      <div className="absolute top-16 left-8 md:left-16 w-16 h-16 md:w-24 md:h-24 animate-float">
-        <div className="w-full h-full rounded-full border-2 border-yellow-600/60" style={{ background: "radial-gradient(circle at 35% 35%, #f5d778, #D4AF37 40%, #b8942e 70%, #8B7226 100%)" }}>
-          <div className="w-full h-full flex items-center justify-center">
-            <Crown className="w-6 h-6 md:w-10 md:h-10 text-yellow-900/80" />
-          </div>
-        </div>
+      {/* Floating drink - top left */}
+      <div className="absolute top-16 left-4 md:left-12 w-24 h-32 md:w-36 md:h-48 animate-float opacity-90">
+        <img src={drinkFrappe} alt="Caramel Frappe" className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(212,175,55,0.3)]" />
       </div>
 
-      {/* Floating gold coins - top right */}
-      <div className="absolute top-12 right-6 md:right-14 w-20 h-20 md:w-28 md:h-28 animate-float-delayed">
-        <div className="w-full h-full rounded-full border-2 border-yellow-600/60" style={{ background: "radial-gradient(circle at 35% 35%, #f5d778, #D4AF37 40%, #b8942e 70%, #8B7226 100%)" }}>
-          <div className="w-full h-full flex items-center justify-center">
-            <Crown className="w-8 h-8 md:w-12 md:h-12 text-yellow-900/80" />
-          </div>
-        </div>
+      {/* Floating drink - top right */}
+      <div className="absolute top-10 right-4 md:right-12 w-28 h-36 md:w-40 md:h-52 animate-float-delayed opacity-90">
+        <img src={drinkIcedCoffee} alt="Iced Coffee" className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(212,175,55,0.3)]" />
       </div>
 
-      {/* Floating gold coin - bottom right */}
-      <div className="absolute bottom-20 right-16 md:right-32 w-14 h-14 md:w-20 md:h-20 animate-float-slow">
-        <div className="w-full h-full rounded-full border-2 border-yellow-600/40" style={{ background: "radial-gradient(circle at 35% 35%, #f5d778, #D4AF37 40%, #b8942e 70%, #8B7226 100%)" }}>
-          <div className="w-full h-full flex items-center justify-center">
-            <Crown className="w-5 h-5 md:w-8 md:h-8 text-yellow-900/80" />
-          </div>
-        </div>
+      {/* Floating drink - bottom left */}
+      <div className="absolute bottom-20 left-8 md:left-24 w-20 h-28 md:w-28 md:h-36 animate-float-slow opacity-80">
+        <img src={drinkIcedCoffee} alt="Iced Coffee" className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(212,175,55,0.2)] -scale-x-100" />
+      </div>
+
+      {/* Floating drink - bottom right */}
+      <div className="absolute bottom-24 right-8 md:right-28 w-20 h-28 md:w-28 md:h-36 animate-float opacity-80">
+        <img src={drinkFrappe} alt="Caramel Frappe" className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(212,175,55,0.2)] -scale-x-100" />
       </div>
 
       {/* Main content */}
@@ -78,7 +73,7 @@ const NightGoldSection = () => {
           <span className="flex items-center justify-center gap-3 md:gap-5">
             NIGHT
             <span className="inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 rounded-full border-2 border-yellow-600/50" style={{ background: "radial-gradient(circle, #D4AF37, #8B7226)" }}>
-              <Crown className="w-7 h-7 md:w-10 md:h-10 text-yellow-200" />
+              <Star className="w-7 h-7 md:w-10 md:h-10 text-yellow-200" style={{ fill: "#fde68a" }} />
             </span>
             OLD
           </span>
