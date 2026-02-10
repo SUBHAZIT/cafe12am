@@ -1,12 +1,16 @@
-import heroFood from "@/assets/hero-food.jpg";
+import heroVideo from "@/assets/hero-video.mp4";
 
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroFood})` }}
+      {/* Background video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+        src={heroVideo}
       />
       {/* Overlay */}
       <div className="absolute inset-0 hero-overlay" />
