@@ -15,6 +15,10 @@ import CartPage from "@/pages/CartPage";
 import AdminPanel from "@/pages/AdminPanel";
 import MerchantDashboard from "@/pages/MerchantDashboard";
 import DeliveryPartnerApp from "@/pages/DeliveryPartnerApp";
+import CustomerProfile from "@/pages/CustomerProfile";
+import MerchantProfile from "@/pages/MerchantProfile";
+import DeliveryProfile from "@/pages/DeliveryProfile";
+import AdminProfile from "@/pages/AdminProfile";
 
 const queryClient = new QueryClient();
 
@@ -51,16 +55,20 @@ const App = () => (
             {/* Customer */}
             <Route path="/order" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerMenu /></ProtectedRoute>} />
             <Route path="/order/orders" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerOrders /></ProtectedRoute>} />
+            <Route path="/order/profile" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerProfile /></ProtectedRoute>} />
             <Route path="/order/cart" element={<CartPage />} />
 
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminPanel /></ProtectedRoute>} />
+            <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={["admin"]}><AdminProfile /></ProtectedRoute>} />
 
             {/* Merchant */}
             <Route path="/merchant" element={<ProtectedRoute allowedRoles={["merchant"]}><MerchantDashboard /></ProtectedRoute>} />
+            <Route path="/merchant/profile" element={<ProtectedRoute allowedRoles={["merchant"]}><MerchantProfile /></ProtectedRoute>} />
 
             {/* Delivery Partner */}
             <Route path="/delivery" element={<ProtectedRoute allowedRoles={["delivery_partner"]}><DeliveryPartnerApp /></ProtectedRoute>} />
+            <Route path="/delivery/profile" element={<ProtectedRoute allowedRoles={["delivery_partner"]}><DeliveryProfile /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

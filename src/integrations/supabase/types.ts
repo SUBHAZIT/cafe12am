@@ -762,6 +762,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string | null
+          emergency_contact: string | null
           full_name: string
           id: string
           is_active: boolean
@@ -774,6 +775,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string | null
+          emergency_contact?: string | null
           full_name?: string
           id?: string
           is_active?: boolean
@@ -786,6 +788,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string | null
+          emergency_contact?: string | null
           full_name?: string
           id?: string
           is_active?: boolean
@@ -830,6 +833,44 @@ export type Database = {
           },
           {
             foreignKeyName: "ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_addresses: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          is_default: boolean
+          label: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_addresses_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"

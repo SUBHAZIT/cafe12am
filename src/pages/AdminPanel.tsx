@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Store, Truck, BarChart3, Tag, LogOut, Plus, Edit, Trash2, ToggleLeft, ToggleRight, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Users, Store, Truck, BarChart3, Tag, LogOut, Plus, Edit, Trash2, ToggleLeft, ToggleRight, Sparkles, ChevronDown, ChevronUp, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 type Tab = "overview" | "merchants" | "riders" | "customers" | "orders" | "coupons";
@@ -122,9 +123,14 @@ const AdminPanel = () => {
             <h1 className="font-heading text-xl font-bold text-primary uppercase tracking-tight">CAFÉ12AM</h1>
             <span className="text-xs font-heading font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase tracking-wider">ADMIN</span>
           </div>
-          <button onClick={signOut} className="p-2 rounded-full hover:bg-secondary transition-colors">
-            <LogOut className="w-5 h-5 text-muted-foreground" />
-          </button>
+          <div className="flex items-center gap-2">
+            <Link to="/admin/profile" className="p-2 rounded-full hover:bg-secondary transition-colors">
+              <User className="w-5 h-5 text-muted-foreground" />
+            </Link>
+            <button onClick={signOut} className="p-2 rounded-full hover:bg-secondary transition-colors">
+              <LogOut className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
       </nav>
 
