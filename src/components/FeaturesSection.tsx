@@ -17,7 +17,7 @@ const rightFeatures = [
 
 const FeaturesSection = () => {
   return (
-    <section className="py-24 px-4 section-pink overflow-hidden" id="features">
+    <section className="pt-24 pb-0 px-4 section-pink overflow-hidden" id="features">
       <div className="max-w-6xl mx-auto text-center">
         <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-4 tracking-tight uppercase">
           WHAT'S WAITING FOR YOU ON THE APP?
