@@ -17,7 +17,7 @@ const rightFeatures = [
 
 const FeaturesSection = () => {
   return (
-    <section className="py-24 px-4 section-pink overflow-hidden" id="features">
+    <section className="pt-24 pb-0 px-4 section-pink overflow-hidden" id="features">
       <div className="max-w-6xl mx-auto text-center">
         <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-4 tracking-tight uppercase">
           WHAT'S WAITING FOR YOU ON THE APP?
@@ -27,7 +27,7 @@ const FeaturesSection = () => {
         </p>
 
         {/* Phone + Features Layout */}
-        <div className="relative flex items-center justify-center min-h-[500px] md:min-h-[600px]">
+        <div className="relative flex items-end justify-center h-[450px] md:h-[550px] overflow-hidden">
           {/* Left Features */}
           <div className="hidden md:flex flex-col gap-6 absolute left-0 lg:left-[5%] top-1/2 -translate-y-1/2">
             {leftFeatures.map((f, i) => (
@@ -43,16 +43,16 @@ const FeaturesSection = () => {
             ))}
           </div>
 
-          {/* Center Phone */}
+          {/* Center Phone - large, bottom cut off */}
           <div className="relative z-10 flex flex-col items-center">
-            <div className="relative w-52 md:w-64">
+            <div className="relative w-72 md:w-96 lg:w-[420px]">
               <img src={phoneMockup} alt="Smartphone" className="w-full drop-shadow-2xl" />
-              {/* Card on phone screen */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card rounded-2xl p-5 shadow-card w-36 md:w-44 text-center">
-                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-3">
-                  <Clock className="w-6 h-6 text-primary" />
+              {/* Card on phone screen - centered */}
+              <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card rounded-2xl p-5 md:p-6 shadow-card w-40 md:w-52 text-center">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-6 h-6 md:w-7 md:h-7 text-primary" />
                 </div>
-                <p className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">SCHEDULE MIDNIGHT ORDER</p>
+                <p className="font-heading text-xs md:text-sm font-bold tracking-wide uppercase text-foreground">SCHEDULE MIDNIGHT ORDER</p>
               </div>
             </div>
           </div>
