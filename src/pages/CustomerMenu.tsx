@@ -36,6 +36,8 @@ const CustomerMenu = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [showClosedBanner, setShowClosedBanner] = useState(!isOpen);
+  const [showCheckoutBlock, setShowCheckoutBlock] = useState(false);
   const [dbItems, setDbItems] = useState<any[]>([]);
 
   useEffect(() => {
