@@ -27,7 +27,7 @@ const FeaturesSection = () => {
         </p>
 
         {/* Phone + Features Layout */}
-        <div className="relative flex items-end justify-center h-[450px] md:h-[550px] overflow-hidden">
+        <div className="relative flex items-end justify-center h-[500px] md:h-[650px] overflow-hidden">
           {/* Left Features */}
           <div className="hidden md:flex flex-col gap-6 absolute left-0 lg:left-[5%] top-1/2 -translate-y-1/2">
             {leftFeatures.map((f, i) => (
@@ -45,12 +45,12 @@ const FeaturesSection = () => {
 
           {/* Center Phone - large, bottom cut off */}
           <div className="relative z-10 flex flex-col items-center">
-            <div className="relative w-72 md:w-96 lg:w-[420px]">
+            <div className="relative w-96 md:w-[500px] lg:w-[600px]">
               <img src={phoneMockup} alt="Smartphone" className="w-full drop-shadow-2xl" />
               {/* Card on phone screen - centered */}
-              <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card rounded-2xl p-5 md:p-6 shadow-card w-40 md:w-52 text-center">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-3">
-                  <Clock className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+              <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card rounded-2xl p-6 md:p-8 shadow-card w-48 md:w-60 text-center">
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-7 h-7 md:w-8 md:h-8 text-primary" />
                 </div>
                 <p className="font-heading text-xs md:text-sm font-bold tracking-wide uppercase text-foreground">SCHEDULE MIDNIGHT ORDER</p>
               </div>
