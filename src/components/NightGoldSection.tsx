@@ -86,7 +86,7 @@ const NightGoldSection = () => {
 
         {/* Subtext */}
         <p className="text-lg md:text-xl tracking-widest mb-16" style={{ color: "#c4a96a" }}>
-          INDIA'S PREMIUM MIDNIGHT SNACK EXPERIENCE
+          CAMPUS'S PREMIUM MIDNIGHT SNACK EXPERIENCE
         </p>
 
         {/* Section title */}
