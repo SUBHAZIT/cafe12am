@@ -133,6 +133,89 @@ export type Database = {
         }
         Relationships: []
       }
+      combo_items: {
+        Row: {
+          combo_id: string
+          created_at: string
+          id: string
+          menu_item_id: string
+          quantity: number
+        }
+        Insert: {
+          combo_id: string
+          created_at?: string
+          id?: string
+          menu_item_id: string
+          quantity?: number
+        }
+        Update: {
+          combo_id?: string
+          created_at?: string
+          id?: string
+          menu_item_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "combo_items_combo_id_fkey"
+            columns: ["combo_id"]
+            isOneToOne: false
+            referencedRelation: "combos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "combo_items_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      combos: {
+        Row: {
+          combo_price: number
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean
+          merchant_id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          combo_price?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          merchant_id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          combo_price?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          merchant_id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "combos_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupons: {
         Row: {
           code: string
@@ -275,8 +358,48 @@ export type Database = {
           },
         ]
       }
+      item_variants: {
+        Row: {
+          created_at: string
+          id: string
+          is_available: boolean
+          menu_item_id: string
+          name: string
+          price: number
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          menu_item_id: string
+          name: string
+          price?: number
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          menu_item_id?: string
+          name?: string
+          price?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_variants_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
+          available_from: string | null
+          available_until: string | null
           category_id: string | null
           created_at: string
           description: string | null
@@ -291,6 +414,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          available_from?: string | null
+          available_until?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -305,6 +430,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          available_from?: string | null
+          available_until?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -375,6 +502,82 @@ export type Database = {
             columns: ["merchant_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      option_groups: {
+        Row: {
+          created_at: string
+          id: string
+          is_required: boolean
+          max_selections: number | null
+          menu_item_id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          max_selections?: number | null
+          menu_item_id: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          max_selections?: number | null
+          menu_item_id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "option_groups_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      option_items: {
+        Row: {
+          additional_price: number
+          created_at: string
+          id: string
+          is_available: boolean
+          name: string
+          option_group_id: string
+          sort_order: number
+        }
+        Insert: {
+          additional_price?: number
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          name: string
+          option_group_id: string
+          sort_order?: number
+        }
+        Update: {
+          additional_price?: number
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          name?: string
+          option_group_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "option_items_option_group_id_fkey"
+            columns: ["option_group_id"]
+            isOneToOne: false
+            referencedRelation: "option_groups"
             referencedColumns: ["id"]
           },
         ]

@@ -3,22 +3,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Edit, Trash2, Package, ChefHat, CheckCircle, Store, LogOut, BarChart3, Sparkles, ToggleLeft, ToggleRight } from "lucide-react";
+import { Package, ChefHat, Store, LogOut, BarChart3, ToggleLeft, ToggleRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import CategoryManager from "@/components/merchant/CategoryManager";
+import MenuItemManager from "@/components/merchant/MenuItemManager";
+import ComboManager from "@/components/merchant/ComboManager";
 
 type Tab = "orders" | "menu" | "analytics" | "settings";
+type MenuSubTab = "categories" | "items" | "combos";
 
 const statusFlow = ["placed", "preparing", "ready_for_pickup"];
 
 const MerchantDashboard = () => {
   const { signOut, profile } = useAuth();
   const [tab, setTab] = useState<Tab>("orders");
+  const [menuSubTab, setMenuSubTab] = useState<MenuSubTab>("categories");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
-  const [showAddItem, setShowAddItem] = useState(false);
-  const [newItem, setNewItem] = useState({ name: "", description: "", price: 0, is_veg: false, preparation_time_mins: 15 });
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -56,31 +59,6 @@ const MerchantDashboard = () => {
     setSettings(data);
   };
 
-  const addMenuItem = async () => {
-    if (!profile || !newItem.name) return;
-    setLoading(true);
-    const { error } = await supabase.from("menu_items").insert([{ ...newItem, merchant_id: profile.id }]);
-    setLoading(false);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Item added!" });
-      setShowAddItem(false);
-      setNewItem({ name: "", description: "", price: 0, is_veg: false, preparation_time_mins: 15 });
-      fetchMenu();
-    }
-  };
-
-  const toggleItemAvailability = async (id: string, current: boolean) => {
-    await supabase.from("menu_items").update({ is_available: !current }).eq("id", id);
-    fetchMenu();
-  };
-
-  const deleteItem = async (id: string) => {
-    await supabase.from("menu_items").delete().eq("id", id);
-    fetchMenu();
-    toast({ title: "Item deleted" });
-  };
 
   const updateOrderStatus = async (orderId: string, currentStatus: string) => {
     const idx = statusFlow.indexOf(currentStatus);
@@ -171,51 +149,27 @@ const MerchantDashboard = () => {
         )}
 
         {tab === "menu" && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-heading text-xl font-bold uppercase tracking-tight">MY MENU</h2>
-              <Button onClick={() => setShowAddItem(!showAddItem)} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
-                <Plus className="w-4 h-4 mr-1" /> ADD ITEM
-              </Button>
+          <div className="space-y-6">
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {(["categories", "items", "combos"] as MenuSubTab[]).map((st) => (
+                <button key={st} onClick={() => setMenuSubTab(st)} className={`px-4 py-1.5 rounded-full font-heading font-bold text-xs uppercase tracking-wider whitespace-nowrap transition-all ${menuSubTab === st ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-secondary"}`}>
+                  {st}
+                </button>
+              ))}
             </div>
 
-            {showAddItem && (
-              <div className="bg-card rounded-2xl p-6 shadow-card mb-6 space-y-3">
-                <Input placeholder="Item Name" value={newItem.name} onChange={(e) => setNewItem({...newItem, name: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Description" value={newItem.description} onChange={(e) => setNewItem({...newItem, description: e.target.value})} className="rounded-xl bg-secondary border-0" />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input type="number" placeholder="Price (₹)" value={newItem.price} onChange={(e) => setNewItem({...newItem, price: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
-                  <Input type="number" placeholder="Prep Time (mins)" value={newItem.preparation_time_mins} onChange={(e) => setNewItem({...newItem, preparation_time_mins: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
-                </div>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={newItem.is_veg} onChange={(e) => setNewItem({...newItem, is_veg: e.target.checked})} />
-                  Vegetarian
-                </label>
-                <Button onClick={addMenuItem} disabled={loading} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
-                  {loading ? "ADDING..." : "ADD ITEM"}
-                </Button>
+            {menuSubTab === "categories" && (
+              <CategoryManager selectedCategoryId={selectedCategoryId} onSelectCategory={(id) => { setSelectedCategoryId(id); setMenuSubTab("items"); }} />
+            )}
+            {menuSubTab === "items" && (
+              <div className="space-y-4">
+                {selectedCategoryId && (
+                  <button onClick={() => { setSelectedCategoryId(null); setMenuSubTab("categories"); }} className="text-xs text-primary font-heading font-bold uppercase tracking-wider">← BACK TO CATEGORIES</button>
+                )}
+                <MenuItemManager categoryId={selectedCategoryId} />
               </div>
             )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {menuItems.map((item) => (
-                <div key={item.id} className="bg-card rounded-2xl p-4 shadow-card flex items-center justify-between">
-                  <div>
-                    <p className="font-heading font-bold text-sm uppercase tracking-wide">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">₹{item.price} • {item.preparation_time_mins} min</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => toggleItemAvailability(item.id, item.is_available)} className={`p-2 rounded-full ${item.is_available ? "text-green-500" : "text-muted-foreground"}`}>
-                      {item.is_available ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-                    </button>
-                    <button onClick={() => deleteItem(item.id)} className="p-2 rounded-full text-destructive hover:bg-destructive/10">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {menuItems.length === 0 && <p className="text-center text-muted-foreground py-8 col-span-2 uppercase tracking-wider text-sm">NO MENU ITEMS YET</p>}
-            </div>
+            {menuSubTab === "combos" && <ComboManager />}
           </div>
         )}
 
