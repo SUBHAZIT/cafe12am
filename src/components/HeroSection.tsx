@@ -1,6 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import heroVideo from "@/assets/hero-video.mp4";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background video */}
@@ -26,18 +28,18 @@ const HeroSection = () => {
         <p className="text-lg md:text-xl text-primary-foreground/80 mb-10 tracking-wider">MIDNIGHT HUNGER SOLVED</p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="#menu"
+          <button
+            onClick={() => navigate("/login")}
             className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-card text-primary font-heading font-semibold text-lg tracking-wide shadow-card hover:shadow-soft hover:scale-105 transition-all duration-300 uppercase"
           >
             ORDER NOW
-          </a>
-          <a
-            href="#food-showcase"
+          </button>
+          <button
+            onClick={() => navigate("/login")}
             className="inline-flex items-center justify-center px-8 py-4 rounded-full border-2 border-primary-foreground/30 text-primary-foreground font-heading font-semibold text-lg tracking-wide hover:bg-primary-foreground/10 hover:border-primary-foreground/60 transition-all duration-300 uppercase"
           >
             VIEW MENU
-          </a>
+          </button>
         </div>
 
         {/* Scroll indicator */}
