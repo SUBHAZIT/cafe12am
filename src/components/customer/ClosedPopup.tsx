@@ -1,6 +1,12 @@
-import { Moon, Clock } from "lucide-react";
+import { Moon, Clock, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const ClosedPopup = () => {
+interface ClosedPopupProps {
+  onDismiss?: () => void;
+  blockCheckout?: boolean;
+}
+
+const ClosedPopup = ({ onDismiss, blockCheckout = false }: ClosedPopupProps) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/80 backdrop-blur-md">
       <div className="bg-card rounded-3xl p-10 max-w-lg mx-4 text-center shadow-card relative overflow-hidden">
@@ -33,6 +39,17 @@ const ClosedPopup = () => {
             <Clock className="w-4 h-4" />
             <span className="text-sm uppercase tracking-wider">OPEN DAILY 9:00 PM – 2:00 AM</span>
           </div>
+
+          {!blockCheckout && onDismiss && (
+            <Button
+              onClick={onDismiss}
+              variant="outline"
+              className="mt-6 rounded-full font-heading font-bold uppercase tracking-wider"
+            >
+              <X className="w-4 h-4 mr-2" />
+              BROWSE MENU ANYWAY
+            </Button>
+          )}
         </div>
       </div>
     </div>

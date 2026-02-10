@@ -36,6 +36,8 @@ const CustomerMenu = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [showClosedBanner, setShowClosedBanner] = useState(!isOpen);
+  const [showCheckoutBlock, setShowCheckoutBlock] = useState(false);
   const [dbItems, setDbItems] = useState<any[]>([]);
 
   useEffect(() => {
@@ -74,7 +76,12 @@ const CustomerMenu = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isOpen && <ClosedPopup />}
+      {showClosedBanner && !isOpen && (
+        <ClosedPopup onDismiss={() => setShowClosedBanner(false)} />
+      )}
+      {showCheckoutBlock && !isOpen && (
+        <ClosedPopup blockCheckout />
+      )}
       <CustomerNav cartCount={cartCount} />
 
       {/* Hero banner */}
@@ -142,15 +149,23 @@ const CustomerMenu = () => {
       {/* Floating cart bar */}
       {cartCount > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-          <a
-            href="/order/cart"
-            className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow"
-          >
-            <div>
+          {!isOpen ? (
+            <button
+              onClick={() => setShowCheckoutBlock(true)}
+              className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow w-full"
+            >
               <p className="font-heading font-bold text-sm uppercase tracking-wider">{cartCount} ITEMS IN CART</p>
-            </div>
-            <span className="font-heading font-bold uppercase tracking-wider text-sm">VIEW CART →</span>
-          </a>
+              <span className="font-heading font-bold uppercase tracking-wider text-sm">VIEW CART →</span>
+            </button>
+          ) : (
+            <a
+              href="/order/cart"
+              className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <p className="font-heading font-bold text-sm uppercase tracking-wider">{cartCount} ITEMS IN CART</p>
+              <span className="font-heading font-bold uppercase tracking-wider text-sm">VIEW CART →</span>
+            </a>
+          )}
         </div>
       )}
     </div>
