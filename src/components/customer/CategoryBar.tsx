@@ -27,39 +27,43 @@ const CategoryBar = ({ selectedCategory, onSelect, categories }: CategoryBarProp
     : defaultCategories;
 
   return (
-    <section className="py-6 px-4">
+    <section className="py-6 px-4 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <h2 className="font-heading text-xl font-bold uppercase tracking-wide mb-4 text-foreground">
           WHAT'S ON YOUR MIND?
         </h2>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="flex gap-5 overflow-x-auto pb-4 px-1 scrollbar-hide">
           <button
             onClick={() => onSelect(null)}
-            className={`flex-shrink-0 flex flex-col items-center gap-2 transition-all ${
-              !selectedCategory ? "scale-110" : "opacity-70 hover:opacity-100"
-            }`}
+            className="flex-shrink-0 flex flex-col items-center gap-2 transition-all"
           >
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl ${
-              !selectedCategory ? "bg-primary text-primary-foreground shadow-soft" : "bg-secondary"
+            <div className={`w-[72px] h-[72px] rounded-full flex items-center justify-center text-xl border-2 transition-all ${
+              !selectedCategory
+                ? "bg-primary text-primary-foreground border-primary shadow-soft scale-105"
+                : "bg-secondary border-border hover:border-primary/40"
             }`}>
               🍽️
             </div>
-            <span className="text-xs font-heading font-semibold uppercase tracking-wider">ALL</span>
+            <span className={`text-[10px] font-heading font-semibold uppercase tracking-wider transition-colors ${
+              !selectedCategory ? "text-primary" : "text-muted-foreground"
+            }`}>ALL</span>
           </button>
           {items.map((cat) => (
             <button
               key={cat.name}
               onClick={() => onSelect(cat.name === selectedCategory ? null : cat.name)}
-              className={`flex-shrink-0 flex flex-col items-center gap-2 transition-all ${
-                selectedCategory === cat.name ? "scale-110" : "opacity-70 hover:opacity-100"
-              }`}
+              className="flex-shrink-0 flex flex-col items-center gap-2 transition-all"
             >
-              <div className={`w-20 h-20 rounded-full overflow-hidden border-2 ${
-                selectedCategory === cat.name ? "border-primary shadow-soft" : "border-transparent"
+              <div className={`w-[72px] h-[72px] rounded-full overflow-hidden border-2 transition-all ${
+                selectedCategory === cat.name
+                  ? "border-primary shadow-soft scale-105"
+                  : "border-border hover:border-primary/40"
               }`}>
                 <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
               </div>
-              <span className="text-xs font-heading font-semibold uppercase tracking-wider">{cat.name}</span>
+              <span className={`text-[10px] font-heading font-semibold uppercase tracking-wider transition-colors ${
+                selectedCategory === cat.name ? "text-primary" : "text-muted-foreground"
+              }`}>{cat.name}</span>
             </button>
           ))}
         </div>
