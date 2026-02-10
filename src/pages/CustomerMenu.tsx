@@ -76,7 +76,12 @@ const CustomerMenu = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isOpen && <ClosedPopup />}
+      {showClosedBanner && !isOpen && (
+        <ClosedPopup onDismiss={() => setShowClosedBanner(false)} />
+      )}
+      {showCheckoutBlock && !isOpen && (
+        <ClosedPopup blockCheckout />
+      )}
       <CustomerNav cartCount={cartCount} />
 
       {/* Hero banner */}
