@@ -49,7 +49,7 @@ const App = () => (
             <Route path="/dashboard" element={<RoleRedirector />} />
 
             {/* Customer */}
-            <Route path="/order" element={<CustomerMenu />} />
+            <Route path="/order" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerMenu /></ProtectedRoute>} />
             <Route path="/order/orders" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerOrders /></ProtectedRoute>} />
             <Route path="/order/cart" element={<CartPage />} />
 
