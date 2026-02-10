@@ -27,7 +27,7 @@ const FeaturesSection = () => {
         </p>
 
         {/* Phone + Features Layout */}
-        <div className="relative flex items-center justify-center min-h-[500px] md:min-h-[600px]">
+        <div className="relative flex items-end justify-center h-[450px] md:h-[550px] overflow-hidden">
           {/* Left Features */}
           <div className="hidden md:flex flex-col gap-6 absolute left-0 lg:left-[5%] top-1/2 -translate-y-1/2">
             {leftFeatures.map((f, i) => (
