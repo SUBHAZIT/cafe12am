@@ -73,7 +73,7 @@ const NightGoldSection = () => {
           <span className="flex items-center justify-center gap-3 md:gap-5">
             NIGHT
             <span className="inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 rounded-full border-2 border-yellow-600/50" style={{ background: "radial-gradient(circle, #D4AF37, #8B7226)" }}>
-              <Crown className="w-7 h-7 md:w-10 md:h-10 text-yellow-200" />
+              <Star className="w-7 h-7 md:w-10 md:h-10 text-yellow-200" style={{ fill: "#fde68a" }} />
             </span>
             OLD
           </span>
