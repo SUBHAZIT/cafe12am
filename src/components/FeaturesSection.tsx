@@ -45,7 +45,7 @@ const FeaturesSection = () => {
 
           {/* Center Phone - large, bottom cut off */}
           <div className="relative z-10 flex flex-col items-center">
-            <div className="relative w-72 md:w-96 lg:w-[420px]">
+            <div className="relative w-96 md:w-[500px] lg:w-[600px]">
               <img src={phoneMockup} alt="Smartphone" className="w-full drop-shadow-2xl" />
               {/* Card on phone screen - centered */}
               <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card rounded-2xl p-5 md:p-6 shadow-card w-40 md:w-52 text-center">
