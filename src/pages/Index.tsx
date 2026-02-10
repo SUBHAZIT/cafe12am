@@ -8,8 +8,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <HeroSection />
-      <FeaturesSection />
       <FoodShowcase />
+      <FeaturesSection />
       <AppCTA />
       <Footer />
     </div>
