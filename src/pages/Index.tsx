@@ -1,7 +1,6 @@
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import FoodShowcase from "@/components/FoodShowcase";
-import NightGoldSection from "@/components/NightGoldSection";
 import AppCTA from "@/components/AppCTA";
 import Footer from "@/components/Footer";
 
@@ -11,7 +10,6 @@ const Index = () => {
       <HeroSection />
       <FoodShowcase />
       <FeaturesSection />
-      <NightGoldSection />
       <AppCTA />
       <Footer />
     </div>
