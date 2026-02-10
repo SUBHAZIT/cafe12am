@@ -14,7 +14,7 @@ const HeroSection = () => {
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-up">
         <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight text-primary-foreground mb-4">
-          CAFE12AM
+          CAFÉ12AM
         </h1>
         <p className="font-heading text-xl md:text-2xl lg:text-3xl font-medium tracking-widest text-primary-foreground/90 mb-2">
           CAMPUS'S MIDNIGHT SNACK DESTINATION
