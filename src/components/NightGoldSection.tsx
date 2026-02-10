@@ -1,4 +1,6 @@
-import { Crown, Truck, Percent, Star } from "lucide-react";
+import { Truck, Percent, Star } from "lucide-react";
+import drinkFrappe from "@/assets/drink-frappe.png";
+import drinkIcedCoffee from "@/assets/drink-iced-coffee.png";
 
 const NightGoldSection = () => {
   return (
