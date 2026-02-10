@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Package, ChefHat, Store, LogOut, BarChart3, ToggleLeft, ToggleRight } from "lucide-react";
+import { Package, ChefHat, Store, LogOut, BarChart3, ToggleLeft, ToggleRight, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import CategoryManager from "@/components/merchant/CategoryManager";
 import MenuItemManager from "@/components/merchant/MenuItemManager";
@@ -100,6 +101,7 @@ const MerchantDashboard = () => {
               {settings?.is_open ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
               {settings?.is_open ? "STORE OPEN" : "STORE CLOSED"}
             </button>
+            <Link to="/merchant/profile" className="p-2 rounded-full hover:bg-secondary"><User className="w-5 h-5 text-muted-foreground" /></Link>
             <button onClick={signOut} className="p-2 rounded-full hover:bg-secondary"><LogOut className="w-5 h-5 text-muted-foreground" /></button>
           </div>
         </div>

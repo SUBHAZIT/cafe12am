@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Package, DollarSign, Navigation, LogOut, ToggleLeft, ToggleRight, CheckCircle, Truck, Building2 } from "lucide-react";
+import { Package, DollarSign, Navigation, LogOut, ToggleLeft, ToggleRight, CheckCircle, Truck, Building2, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 type Tab = "orders" | "earnings" | "bank";
@@ -132,6 +133,7 @@ const DeliveryPartnerApp = () => {
               {isOnline ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
               {isOnline ? "ONLINE" : "OFFLINE"}
             </button>
+            <Link to="/delivery/profile" className="p-2 rounded-full hover:bg-secondary"><User className="w-5 h-5 text-muted-foreground" /></Link>
             <button onClick={signOut} className="p-2 rounded-full hover:bg-secondary"><LogOut className="w-5 h-5 text-muted-foreground" /></button>
           </div>
         </div>
