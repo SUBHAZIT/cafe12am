@@ -32,7 +32,7 @@ const CategoryBar = ({ selectedCategory, onSelect, categories }: CategoryBarProp
         <h2 className="font-heading text-xl font-bold uppercase tracking-wide mb-4 text-foreground">
           WHAT'S ON YOUR MIND?
         </h2>
-        <div className="flex gap-5 overflow-x-auto pb-4 px-1 scrollbar-hide">
+        <div className="flex gap-5 overflow-x-auto pt-2 pb-4 px-1 scrollbar-hide">
           <button
             onClick={() => onSelect(null)}
             className="flex-shrink-0 flex flex-col items-center gap-2 transition-all"
