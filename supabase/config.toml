@@ -1,0 +1,4 @@
+project_id = "kodwhqgqimegowsxibrq"
+
+[functions.create-staff]
+verify_jwt = false
