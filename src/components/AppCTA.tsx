@@ -1,13 +1,39 @@
-import appMockup from "@/assets/app-mockup.png";
+import phoneMockup from "@/assets/phone-mockup-new.png";
+import { Sparkles } from "lucide-react";
 
 const AppCTA = () => {
   return (
-    <section className="py-24 px-4 section-pink" id="app">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-card rounded-3xl shadow-card overflow-hidden">
+    <section className="py-24 px-4 section-pink relative overflow-hidden" id="app">
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 w-32 h-32 rounded-full border border-primary/20 animate-float" />
+      <div className="absolute bottom-16 right-12 w-48 h-48 rounded-full border border-primary/10" />
+      <div className="absolute top-1/2 left-4 w-2 h-2 rounded-full bg-primary/30 animate-pulse" />
+      <div className="absolute top-20 right-1/4 w-3 h-3 rounded-full bg-primary/20 animate-pulse" />
+      
+      {/* Dotted accent lines */}
+      <div className="absolute top-0 left-1/3 w-px h-full opacity-[0.07]" style={{ backgroundImage: "repeating-linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--primary)) 4px, transparent 4px, transparent 12px)" }} />
+      <div className="absolute top-0 right-1/4 w-px h-full opacity-[0.05]" style={{ backgroundImage: "repeating-linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--primary)) 4px, transparent 4px, transparent 12px)" }} />
+
+      {/* Diamond decorations */}
+      <div className="absolute top-16 right-16 w-4 h-4 rotate-45 border border-primary/20" />
+      <div className="absolute bottom-24 left-20 w-6 h-6 rotate-45 border border-primary/15" />
+      <div className="absolute top-1/3 right-8 w-3 h-3 rotate-45 bg-primary/10" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="bg-card rounded-3xl shadow-card overflow-hidden relative">
+          {/* Inner decorative arcs */}
+          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full border border-primary/5" />
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full border border-primary/8" />
+
           <div className="grid md:grid-cols-2 gap-8 p-8 md:p-16 items-center">
             {/* Text */}
             <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <span className="font-heading text-xs font-bold tracking-[0.3em] text-primary uppercase">
+                  GET THE APP
+                </span>
+              </div>
               <h2 className="font-heading text-4xl md:text-5xl font-bold text-foreground mb-6 uppercase tracking-tight">
                 DOWNLOAD THE APP NOW!
               </h2>
@@ -45,20 +71,28 @@ const AppCTA = () => {
 
             {/* Phone mockup */}
             <div className="flex justify-center relative">
+              {/* Decorative ring behind phone */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-72 h-72 md:w-96 md:h-96 rounded-full border-2 border-dashed border-primary/10 animate-[spin_30s_linear_infinite]" />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-60 h-60 md:w-80 md:h-80 rounded-full border border-primary/5" />
+              </div>
+
               <div className="relative">
                 <img
-                  src={appMockup}
+                  src={phoneMockup}
                   alt="Cafe12AM App"
-                  className="w-64 md:w-80 drop-shadow-2xl"
+                  className="w-64 md:w-80 drop-shadow-2xl relative z-10"
                 />
-                {/* QR Code placeholder */}
-                <div className="absolute -bottom-4 -right-4 bg-card rounded-2xl p-4 shadow-card">
+                {/* QR Code */}
+                <div className="absolute -bottom-4 -right-4 bg-card rounded-2xl p-4 shadow-card z-20">
                   <div className="w-24 h-24 bg-secondary rounded-xl flex items-center justify-center">
                     <div className="grid grid-cols-5 gap-0.5">
                       {Array.from({ length: 25 }).map((_, i) => (
                         <div
                           key={i}
-                          className={`w-3 h-3 rounded-sm ${Math.random() > 0.4 ? 'bg-foreground' : 'bg-transparent'}`}
+                          className={`w-3 h-3 rounded-sm ${[0,1,2,4,5,6,10,12,14,18,20,21,22,24].includes(i) ? 'bg-foreground' : 'bg-transparent'}`}
                         />
                       ))}
                     </div>
@@ -66,6 +100,11 @@ const AppCTA = () => {
                   <p className="text-[10px] text-muted-foreground text-center mt-2 uppercase tracking-wider font-heading">
                     SCAN TO DOWNLOAD
                   </p>
+                </div>
+
+                {/* Small floating badge */}
+                <div className="absolute -top-2 -left-4 bg-primary text-primary-foreground rounded-full px-3 py-1.5 shadow-lg z-20">
+                  <p className="text-[10px] font-heading font-bold uppercase tracking-wider">NEW</p>
                 </div>
               </div>
             </div>
