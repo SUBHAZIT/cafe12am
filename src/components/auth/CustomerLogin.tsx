@@ -2,9 +2,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, ArrowRight, Sparkles, User, Phone, MapPin, KeyRound } from "lucide-react";
+import { Mail, Lock, ArrowRight, Sparkles, User, Phone, MapPin, KeyRound, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const CustomerLogin = () => {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
@@ -164,6 +164,10 @@ const CustomerLogin = () => {
       <div className="absolute bottom-24 left-20 w-6 h-6 rotate-45 border border-primary/15" />
 
       <div className="w-full max-w-md relative z-10">
+        <Link to="/" className="inline-flex items-center gap-2 mb-6 text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-heading text-sm font-bold uppercase tracking-wider">BACK TO HOME</span>
+        </Link>
         <div className="text-center mb-8">
           <h1 className="font-heading text-5xl font-bold text-primary mb-2 uppercase tracking-tight">CAFÉ12AM</h1>
           <p className="text-muted-foreground uppercase tracking-wider text-sm">MIDNIGHT SNACK DESTINATION</p>

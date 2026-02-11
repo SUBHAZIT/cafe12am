@@ -12,7 +12,7 @@ const HelpPage = () => {
           { q: "WHAT PAYMENT METHODS DO YOU ACCEPT?", a: "WE ACCEPT UPI, DEBIT/CREDIT CARDS, NET BANKING, AND CASH ON DELIVERY." },
           { q: "IS THE FOOD HYGIENIC?", a: "ABSOLUTELY. WE MAINTAIN 100% HYGIENE STANDARDS. ALL FOOD IS FRESHLY PREPARED IN CLEAN, SANITIZED KITCHENS." },
           { q: "HOW DO I BECOME A DELIVERY PARTNER?", a: "VISIT THE CAREERS PAGE AND APPLY FOR THE DELIVERY PARTNER ROLE. FLEXIBLE HOURS AND GREAT EARNINGS AWAIT." },
-          { q: "I HAVE AN ISSUE WITH MY ORDER. WHAT DO I DO?", a: "CONTACT US THROUGH THE CONTACT PAGE OR EMAIL SUPPORT@CAFE12AM.COM. WE'LL RESOLVE IT QUICKLY." },
+          { q: "I HAVE AN ISSUE WITH MY ORDER. WHAT DO I DO?", a: "CONTACT US THROUGH THE CONTACT PAGE OR EMAIL SUPPORT@CAFE12AM.STORE. WE'LL RESOLVE IT QUICKLY." },
         ].map((faq, i) => (
           <div key={i} className="bg-card rounded-2xl p-6 shadow-card border border-border">
             <h3 className="font-heading text-sm font-bold text-foreground uppercase tracking-tight mb-2">{faq.q}</h3>

@@ -28,7 +28,7 @@ const CareersPage = () => {
         <div className="text-center section-pink rounded-2xl p-10">
           <h3 className="font-heading text-xl font-bold text-foreground uppercase tracking-tight mb-3">DON'T SEE YOUR ROLE?</h3>
           <p className="text-muted-foreground uppercase tracking-wide text-xs mb-4">DROP US AN EMAIL AND WE'LL GET BACK TO YOU</p>
-          <a href="mailto:careers@cafe12am.com" className="inline-block px-8 py-3 rounded-full bg-primary text-primary-foreground font-heading font-bold text-sm uppercase tracking-wider hover:bg-primary/90 transition-colors">
+          <a href="mailto:careers@cafe12am.store" className="inline-block px-8 py-3 rounded-full bg-primary text-primary-foreground font-heading font-bold text-sm uppercase tracking-wider hover:bg-primary/90 transition-colors">
             REACH OUT
           </a>
         </div>
