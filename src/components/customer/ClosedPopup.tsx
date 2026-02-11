@@ -29,7 +29,7 @@ const ClosedPopup = ({ onDismiss, blockCheckout = false }: ClosedPopupProps) => 
             OUR KITCHEN IS CLOSED AFTER 2AM.
           </p>
           <p className="text-muted-foreground leading-relaxed mb-6 uppercase tracking-wide">
-            PLEASE BRING YOUR SNACK CRAVINGS BACK TOMORROW FROM 9PM.
+            PLEASE BRING YOUR SNACK CRAVINGS BACK TOMORROW FROM 7PM.
           </p>
           <p className="text-primary font-heading font-bold text-lg uppercase tracking-wider">
             THANK YOU FOR VISITING CAFE12AM
@@ -37,17 +37,17 @@ const ClosedPopup = ({ onDismiss, blockCheckout = false }: ClosedPopupProps) => 
 
           <div className="mt-8 flex items-center justify-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4" />
-            <span className="text-sm uppercase tracking-wider">OPEN DAILY 9:00 PM – 2:00 AM</span>
+            <span className="text-sm uppercase tracking-wider">OPEN DAILY 7:00 PM – 2:00 AM</span>
           </div>
 
-          {!blockCheckout && onDismiss && (
+          {onDismiss && (
             <Button
               onClick={onDismiss}
               variant="outline"
               className="mt-6 rounded-full font-heading font-bold uppercase tracking-wider"
             >
               <X className="w-4 h-4 mr-2" />
-              BROWSE MENU ANYWAY
+              {blockCheckout ? "GO BACK" : "BROWSE MENU ANYWAY"}
             </Button>
           )}
         </div>
