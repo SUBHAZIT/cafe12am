@@ -29,6 +29,7 @@ import HelpPage from "@/pages/HelpPage";
 import ContactPage from "@/pages/ContactPage";
 import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
+import DownloadPage from "@/pages/DownloadPage";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/download" element={<DownloadPage />} />
               <Route path="/login" element={<CustomerLogin />} />
               <Route path="/merchant/login" element={<StaffLogin type="merchant" />} />
               <Route path="/delivery/login" element={<StaffLogin type="delivery" />} />

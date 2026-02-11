@@ -147,7 +147,7 @@ const AdminPanel = () => {
     { id: "coupons" as Tab, label: "COUPONS", icon: Tag },
   ];
 
-  const totalRevenue = orders.reduce((a: number, o: any) => a + Number(o.total_amount || 0), 0);
+  const totalRevenue = orders.filter((o: any) => o.status === "delivered" || o.payment_status === "paid").reduce((a: number, o: any) => a + Number(o.total_amount || 0), 0);
 
   // Rider earnings helpers
   const getRiderEarnings = (riderId: string) => {
@@ -303,7 +303,8 @@ const AdminPanel = () => {
           type={f.type || "text"}
           value={values[f.key]}
           onChange={(e) => onChange({ ...values, [f.key]: e.target.value })}
-          className="rounded-xl bg-secondary border-0"
+          onPointerDown={(e) => e.stopPropagation()}
+          className="rounded-xl bg-secondary border border-border focus:border-primary"
         />
       ))}
       <Button onClick={onSubmit} disabled={loading} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
@@ -593,26 +594,26 @@ const AdminPanel = () => {
             </div>
             {showCreateCoupon && (
               <div className="bg-card rounded-2xl p-6 shadow-card mb-6 space-y-3">
-                <Input placeholder="Coupon Code (e.g. MIDNIGHT20)" value={newCoupon.code} onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Description (e.g. Get 50% off!)" value={newCoupon.description} onChange={(e) => setNewCoupon({...newCoupon, description: e.target.value})} className="rounded-xl bg-secondary border-0" />
+                <Input placeholder="Coupon Code (e.g. MIDNIGHT20)" value={newCoupon.code} onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})} onPointerDown={(e) => e.stopPropagation()} className="rounded-xl bg-secondary border border-border focus:border-primary" />
+                <Input placeholder="Description (e.g. Get 50% off!)" value={newCoupon.description} onChange={(e) => setNewCoupon({...newCoupon, description: e.target.value})} onPointerDown={(e) => e.stopPropagation()} className="rounded-xl bg-secondary border border-border focus:border-primary" />
                 <div className="grid grid-cols-2 gap-3">
                   <select
                     value={newCoupon.discount_type}
                     onChange={(e) => setNewCoupon({...newCoupon, discount_type: e.target.value})}
-                    className="rounded-xl bg-secondary border-0 p-3 text-sm"
+                    className="rounded-xl bg-secondary border border-border focus:border-primary p-3 text-sm"
                   >
                     <option value="percentage">Percentage (%)</option>
                     <option value="flat">Flat Amount (₹)</option>
                   </select>
-                  <Input type="number" placeholder="Discount Value" value={newCoupon.discount_value} onChange={(e) => setNewCoupon({...newCoupon, discount_value: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
+                  <Input type="number" placeholder="Discount Value" value={newCoupon.discount_value} onChange={(e) => setNewCoupon({...newCoupon, discount_value: Number(e.target.value)})} onPointerDown={(e) => e.stopPropagation()} className="rounded-xl bg-secondary border border-border focus:border-primary" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Input type="number" placeholder="Min Order ₹" value={newCoupon.min_order_amount || ""} onChange={(e) => setNewCoupon({...newCoupon, min_order_amount: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
-                  <Input type="number" placeholder="Max Discount ₹ (optional)" value={newCoupon.max_discount || ""} onChange={(e) => setNewCoupon({...newCoupon, max_discount: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
+                  <Input type="number" placeholder="Min Order ₹" value={newCoupon.min_order_amount || ""} onChange={(e) => setNewCoupon({...newCoupon, min_order_amount: Number(e.target.value)})} onPointerDown={(e) => e.stopPropagation()} className="rounded-xl bg-secondary border border-border focus:border-primary" />
+                  <Input type="number" placeholder="Max Discount ₹ (optional)" value={newCoupon.max_discount || ""} onChange={(e) => setNewCoupon({...newCoupon, max_discount: Number(e.target.value)})} onPointerDown={(e) => e.stopPropagation()} className="rounded-xl bg-secondary border border-border focus:border-primary" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Input type="number" placeholder="Usage Limit (optional)" value={newCoupon.usage_limit || ""} onChange={(e) => setNewCoupon({...newCoupon, usage_limit: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
-                  <Input type="datetime-local" placeholder="Expires At" value={newCoupon.expires_at} onChange={(e) => setNewCoupon({...newCoupon, expires_at: e.target.value})} className="rounded-xl bg-secondary border-0" />
+                  <Input type="number" placeholder="Usage Limit (optional)" value={newCoupon.usage_limit || ""} onChange={(e) => setNewCoupon({...newCoupon, usage_limit: Number(e.target.value)})} onPointerDown={(e) => e.stopPropagation()} className="rounded-xl bg-secondary border border-border focus:border-primary" />
+                  <Input type="datetime-local" placeholder="Expires At" value={newCoupon.expires_at} onChange={(e) => setNewCoupon({...newCoupon, expires_at: e.target.value})} onPointerDown={(e) => e.stopPropagation()} className="rounded-xl bg-secondary border border-border focus:border-primary" />
                 </div>
                 <Button onClick={createCoupon} disabled={loading} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
                   {loading ? "CREATING..." : "CREATE COUPON"}

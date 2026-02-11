@@ -1,5 +1,6 @@
 import phoneMockup from "@/assets/phone-mockup-new.png";
 import { Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const AppCTA = () => {
   return (
@@ -42,30 +43,30 @@ const AppCTA = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <a
-                  href="#"
+                <Link
+                  to="/download"
                   className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-foreground text-card font-heading font-semibold hover:opacity-90 transition-opacity"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M3 20.5V3.5C3 2.91 3.34 2.39 3.84 2.15L13.69 12L3.84 21.85C3.34 21.6 3 21.09 3 20.5ZM16.81 15.12L6.05 21.34L14.54 12.85L16.81 15.12ZM20.16 10.81C20.5 11.08 20.75 11.5 20.75 12C20.75 12.5 20.5 12.92 20.16 13.19L17.89 14.5L15.39 12L17.89 9.5L20.16 10.81ZM6.05 2.66L16.81 8.88L14.54 11.15L6.05 2.66Z" />
                   </svg>
                   <div className="text-left">
-                    <p className="text-[10px] uppercase tracking-wider opacity-80">GET IT ON</p>
+                    <p className="text-[10px] uppercase tracking-wider opacity-80">COMING SOON ON</p>
                     <p className="text-sm font-bold uppercase">GOOGLE PLAY</p>
                   </div>
-                </a>
-                <a
-                  href="#"
+                </Link>
+                <Link
+                  to="/download"
                   className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-foreground text-card font-heading font-semibold hover:opacity-90 transition-opacity"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 16.56 2.93 11.3 4.7 7.72C5.57 5.94 7.36 4.86 9.28 4.84C10.56 4.81 11.78 5.72 12.56 5.72C13.34 5.72 14.85 4.62 16.41 4.8C17.09 4.83 18.92 5.09 20.09 6.81C19.97 6.89 17.67 8.22 17.7 11.04C17.73 14.38 20.63 15.48 20.66 15.49C20.63 15.57 20.19 17.14 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z" />
                   </svg>
                   <div className="text-left">
-                    <p className="text-[10px] uppercase tracking-wider opacity-80">DOWNLOAD ON THE</p>
-                    <p className="text-sm font-bold uppercase">APP STORE</p>
+                    <p className="text-[10px] uppercase tracking-wider opacity-80">USE PWA ON</p>
+                    <p className="text-sm font-bold uppercase">iPHONE</p>
                   </div>
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -87,16 +88,13 @@ const AppCTA = () => {
                 />
                 {/* QR Code */}
                 <div className="absolute -bottom-4 -right-4 bg-card rounded-2xl p-4 shadow-card z-20">
-                  <div className="w-24 h-24 bg-secondary rounded-xl flex items-center justify-center">
-                    <div className="grid grid-cols-5 gap-0.5">
-                      {Array.from({ length: 25 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-3 h-3 rounded-sm ${[0,1,2,4,5,6,10,12,14,18,20,21,22,24].includes(i) ? 'bg-foreground' : 'bg-transparent'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  <a href="https://drive.google.com/drive/folders/1JOKr1pxejak8tMsby09p2YrXwHTpvd24" target="_blank" rel="noopener noreferrer">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent("https://drive.google.com/drive/folders/1JOKr1pxejak8tMsby09p2YrXwHTpvd24")}&bgcolor=FFF5F0&color=1a1a1a`}
+                      alt="Download QR Code"
+                      className="w-24 h-24 rounded-xl"
+                    />
+                  </a>
                   <p className="text-[10px] text-muted-foreground text-center mt-2 uppercase tracking-wider font-heading">
                     SCAN TO DOWNLOAD
                   </p>
