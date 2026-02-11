@@ -231,7 +231,7 @@ const CheckoutPage = () => {
 
   const sendOrderEmail = async (orderNumber: string, itemsList: { name: string; quantity: number; price: number }[], totalAmount: number) => {
     try {
-      const customerEmail = profile?.email || user?.email || "";
+      const customerEmail = user?.email || profile?.email || "";
       const customerName = contactName || profile?.full_name || "Customer";
       if (!customerEmail) {
         console.warn("No customer email found, skipping email");
@@ -241,6 +241,9 @@ const CheckoutPage = () => {
       console.log("Sending email to:", customerEmail, "Order:", orderNumber);
       const result = await emailjs.send("service_iyz5u2i", "template_b6yper6", {
         to_email: customerEmail,
+        email: customerEmail,
+        user_email: customerEmail,
+        reply_to: customerEmail,
         to_name: customerName,
         order_id: orderNumber,
         order_items: itemsHtml,
@@ -251,7 +254,7 @@ const CheckoutPage = () => {
       toast({ title: "Confirmation email sent! 📧" });
     } catch (err: any) {
       console.error("Email sending failed:", err);
-      toast({ title: "Email could not be sent", description: err?.text || err?.message || "Check email settings", variant: "destructive" });
+      toast({ title: "Email could not be sent", description: `Please ensure your EmailJS template has {{to_email}} in the "To Email" field. Error: ${err?.text || err?.message}`, variant: "destructive" });
     }
   };
 

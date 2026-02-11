@@ -150,15 +150,19 @@ const DeliveryPartnerApp = () => {
   };
 
   const pickupOrder = async (id: string) => {
-    // Generate a 4-digit OTP
     const otp = String(Math.floor(1000 + Math.random() * 9000));
     await supabase.from("delivery_assignments").update({ status: "picked_up", picked_up_at: new Date().toISOString() }).eq("id", id);
     const assignment = assignments.find(a => a.id === id);
     if (assignment) {
-      await supabase.from("orders").update({ status: "out_for_delivery", delivery_otp: otp }).eq("id", assignment.order_id);
+      const { error } = await supabase.from("orders").update({ status: "out_for_delivery", delivery_otp: otp }).eq("id", assignment.order_id);
+      if (error) {
+        console.error("Failed to save OTP:", error);
+        toast({ title: "Error saving OTP", description: error.message, variant: "destructive" });
+        return;
+      }
     }
     fetchAssignments();
-    toast({ title: "Picked up! OTP has been sent to customer." });
+    toast({ title: `Picked up! OTP: ${otp} sent to customer.` });
   };
 
   const deliverOrder = async (id: string, enteredOtp: string) => {
