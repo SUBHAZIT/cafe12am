@@ -24,7 +24,7 @@ const AdminPanel = () => {
   const [showCreateCoupon, setShowCreateCoupon] = useState(false);
   const [newMerchant, setNewMerchant] = useState({ email: "", password: "", full_name: "", phone: "" });
   const [newRider, setNewRider] = useState({ email: "", password: "", full_name: "", phone: "" });
-  const [newCoupon, setNewCoupon] = useState({ code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0, description: "" });
+  const [newCoupon, setNewCoupon] = useState({ code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0, max_discount: 0, usage_limit: 0, expires_at: "", description: "" });
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -93,16 +93,38 @@ const AdminPanel = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("coupons").insert([newCoupon]);
+    const payload: any = {
+      code: newCoupon.code,
+      description: newCoupon.description || null,
+      discount_type: newCoupon.discount_type,
+      discount_value: newCoupon.discount_value,
+      min_order_amount: newCoupon.min_order_amount,
+    };
+    if (newCoupon.max_discount > 0) payload.max_discount = newCoupon.max_discount;
+    if (newCoupon.usage_limit > 0) payload.usage_limit = newCoupon.usage_limit;
+    if (newCoupon.expires_at) payload.expires_at = new Date(newCoupon.expires_at).toISOString();
+    const { error } = await supabase.from("coupons").insert([payload]);
     setLoading(false);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Coupon created!" });
       setShowCreateCoupon(false);
-      setNewCoupon({ code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0, description: "" });
+      setNewCoupon({ code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0, max_discount: 0, usage_limit: 0, expires_at: "", description: "" });
       fetchData();
     }
+  };
+
+  const toggleCoupon = async (id: string, currentActive: boolean) => {
+    await supabase.from("coupons").update({ is_active: !currentActive }).eq("id", id);
+    fetchData();
+    toast({ title: `Coupon ${!currentActive ? "activated" : "deactivated"}` });
+  };
+
+  const deleteCoupon = async (id: string) => {
+    await supabase.from("coupons").delete().eq("id", id);
+    fetchData();
+    toast({ title: "Coupon deleted" });
   };
 
   const toggleActive = async (profileId: string, currentStatus: boolean) => {
@@ -487,19 +509,26 @@ const AdminPanel = () => {
             {showCreateCoupon && (
               <div className="bg-card rounded-2xl p-6 shadow-card mb-6 space-y-3">
                 <Input placeholder="Coupon Code (e.g. MIDNIGHT20)" value={newCoupon.code} onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})} className="rounded-xl bg-secondary border-0" />
-                <Input placeholder="Description" value={newCoupon.description} onChange={(e) => setNewCoupon({...newCoupon, description: e.target.value})} className="rounded-xl bg-secondary border-0" />
+                <Input placeholder="Description (e.g. Get 50% off!)" value={newCoupon.description} onChange={(e) => setNewCoupon({...newCoupon, description: e.target.value})} className="rounded-xl bg-secondary border-0" />
                 <div className="grid grid-cols-2 gap-3">
                   <select
                     value={newCoupon.discount_type}
                     onChange={(e) => setNewCoupon({...newCoupon, discount_type: e.target.value})}
                     className="rounded-xl bg-secondary border-0 p-3 text-sm"
                   >
-                    <option value="percentage">Percentage</option>
-                    <option value="flat">Flat Amount</option>
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="flat">Flat Amount (₹)</option>
                   </select>
                   <Input type="number" placeholder="Discount Value" value={newCoupon.discount_value} onChange={(e) => setNewCoupon({...newCoupon, discount_value: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
                 </div>
-                <Input type="number" placeholder="Min Order Amount" value={newCoupon.min_order_amount} onChange={(e) => setNewCoupon({...newCoupon, min_order_amount: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input type="number" placeholder="Min Order ₹" value={newCoupon.min_order_amount || ""} onChange={(e) => setNewCoupon({...newCoupon, min_order_amount: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
+                  <Input type="number" placeholder="Max Discount ₹ (optional)" value={newCoupon.max_discount || ""} onChange={(e) => setNewCoupon({...newCoupon, max_discount: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input type="number" placeholder="Usage Limit (optional)" value={newCoupon.usage_limit || ""} onChange={(e) => setNewCoupon({...newCoupon, usage_limit: Number(e.target.value)})} className="rounded-xl bg-secondary border-0" />
+                  <Input type="datetime-local" placeholder="Expires At" value={newCoupon.expires_at} onChange={(e) => setNewCoupon({...newCoupon, expires_at: e.target.value})} className="rounded-xl bg-secondary border-0" />
+                </div>
                 <Button onClick={createCoupon} disabled={loading} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
                   {loading ? "CREATING..." : "CREATE COUPON"}
                 </Button>
@@ -507,18 +536,36 @@ const AdminPanel = () => {
             )}
             <div className="space-y-3">
               {coupons.map((c: any) => (
-                <div key={c.id} className="bg-card rounded-2xl p-4 shadow-card flex items-center justify-between">
-                  <div>
-                    <p className="font-heading font-bold text-sm uppercase tracking-wide">{c.code}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {c.discount_type === "percentage" ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}
-                      {c.min_order_amount > 0 && ` • Min ₹${c.min_order_amount}`}
-                      {c.usage_limit && ` • ${c.used_count}/${c.usage_limit} used`}
-                    </p>
+                <div key={c.id} className="bg-card rounded-2xl p-4 shadow-card">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="font-heading font-bold text-sm uppercase tracking-wide">{c.code}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {c.discount_type === "percentage" ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}
+                        {c.min_order_amount > 0 && ` · Min ₹${c.min_order_amount}`}
+                        {c.max_discount && ` · Max ₹${c.max_discount}`}
+                      </p>
+                      {c.description && <p className="text-xs text-muted-foreground mt-0.5">{c.description}</p>}
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {c.usage_limit ? `${c.used_count}/${c.usage_limit} used` : `${c.used_count} used`}
+                        {c.expires_at && ` · Expires ${new Date(c.expires_at).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => toggleCoupon(c.id, c.is_active)}
+                        className={`p-1.5 rounded-full ${c.is_active ? "text-green-500" : "text-muted-foreground"}`}
+                      >
+                        {c.is_active ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                      </button>
+                      <button
+                        onClick={() => deleteCoupon(c.id)}
+                        className="p-1.5 rounded-full text-red-400 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <span className={`text-xs font-heading font-bold px-2 py-1 rounded-full uppercase ${c.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                    {c.is_active ? "ACTIVE" : "INACTIVE"}
-                  </span>
                 </div>
               ))}
               {coupons.length === 0 && <p className="text-center text-muted-foreground py-8 uppercase tracking-wider text-sm">NO COUPONS YET</p>}
