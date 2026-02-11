@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -28,11 +28,10 @@ const MerchantDashboard = () => {
   const [settings, setSettings] = useState<any>(null);
   const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
-  const [, setTick] = useState(0); // for timer re-renders
+  const [, setTick] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevNewCountRef = useRef(0);
 
-  // Timer tick every second
   useEffect(() => {
     const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
@@ -49,7 +48,6 @@ const MerchantDashboard = () => {
     return () => { supabase.removeChannel(channel); };
   }, [profile]);
 
-  // New order alert sound
   useEffect(() => {
     const newOrders = orders.filter(o => o.status === "placed" || o.status === "pending");
     if (newOrders.length > prevNewCountRef.current && prevNewCountRef.current >= 0) {
@@ -58,7 +56,6 @@ const MerchantDashboard = () => {
     prevNewCountRef.current = newOrders.length;
   }, [orders]);
 
-  // Auto-cancel check
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
@@ -112,7 +109,7 @@ const MerchantDashboard = () => {
   const acceptOrder = async (orderId: string) => {
     await supabase.from("orders").update({ status: "preparing" }).eq("id", orderId);
     fetchOrders();
-    toast({ title: "✅ Order accepted! Moving to kitchen." });
+    toast({ title: "Order accepted! Moving to kitchen." });
   };
 
   const rejectOrder = async (orderId: string) => {
@@ -129,13 +126,13 @@ const MerchantDashboard = () => {
   const markReady = async (orderId: string) => {
     await supabase.from("orders").update({ status: "ready_for_pickup" }).eq("id", orderId);
     fetchOrders();
-    toast({ title: "📦 Order marked as ready!" });
+    toast({ title: "Order marked as ready!" });
   };
 
   const confirmPickup = async (orderId: string) => {
     await supabase.from("orders").update({ status: "out_for_delivery" }).eq("id", orderId);
     fetchOrders();
-    toast({ title: "🚴 Order picked up by rider!" });
+    toast({ title: "Order picked up by rider!" });
   };
 
   const toggleStore = async () => {
@@ -181,7 +178,7 @@ const MerchantDashboard = () => {
       <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border shadow-soft">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="font-heading text-xl font-bold text-primary uppercase tracking-tight">CAFÉ12AM</h1>
+            <h1 className="font-heading text-xl font-bold text-primary uppercase tracking-tight">CAFE12AM</h1>
             <span className="text-xs font-heading font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase tracking-wider">KITCHEN</span>
           </div>
           <div className="flex items-center gap-3">
@@ -199,9 +196,9 @@ const MerchantDashboard = () => {
       <div className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-xs">
           <div className="flex items-center gap-4">
-            <span className="font-heading font-bold text-foreground">🔥 Queue: <span className="text-primary">{newOrders.length + preparingOrders.length}</span></span>
-            <span className="font-heading font-bold text-foreground">✅ Today: <span className="text-primary">{todayOrders.filter(o => o.status === "delivered").length}</span></span>
-            <span className="font-heading font-bold text-foreground">💰 Revenue: <span className="text-primary">₹{todayRevenue}</span></span>
+            <span className="font-heading font-bold text-foreground">Queue: <span className="text-primary">{newOrders.length + preparingOrders.length}</span></span>
+            <span className="font-heading font-bold text-foreground">Today: <span className="text-primary">{todayOrders.filter(o => o.status === "delivered").length}</span></span>
+            <span className="font-heading font-bold text-foreground">Revenue: <span className="text-primary">Rs.{todayRevenue}</span></span>
           </div>
         </div>
       </div>
@@ -234,7 +231,7 @@ const MerchantDashboard = () => {
         {tab === "new" && (
           <div className="space-y-4">
             <h2 className="font-heading text-2xl font-bold uppercase tracking-tight flex items-center gap-2">
-              🔔 NEW ORDERS
+              <Bell className="w-6 h-6 text-primary" /> NEW ORDERS
               {newOrders.length > 0 && <span className="text-sm bg-red-500 text-white px-2 py-0.5 rounded-full animate-bounce">{newOrders.length}</span>}
             </h2>
             {newOrders.length === 0 ? (
@@ -265,7 +262,7 @@ const MerchantDashboard = () => {
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between">
                       <p className="font-heading font-bold text-lg uppercase tracking-wide">{o.order_number}</p>
-                      <p className="font-heading font-bold text-primary text-xl">₹{o.total_amount}</p>
+                      <p className="font-heading font-bold text-primary text-xl">Rs.{o.total_amount}</p>
                     </div>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {getTimeSince(o.created_at)} ago
@@ -277,23 +274,23 @@ const MerchantDashboard = () => {
                     {o.order_items?.map((item: any) => (
                       <div key={item.id} className="flex justify-between py-1">
                         <span className="font-heading font-bold text-sm">{item.quantity}x {item.item_name}</span>
-                        <span className="text-sm text-muted-foreground">₹{item.total_price}</span>
+                        <span className="text-sm text-muted-foreground">Rs.{item.total_price}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* Address */}
-                  <p className="text-xs text-muted-foreground mb-2">📍 {o.delivery_address}</p>
+                  <p className="text-xs text-muted-foreground mb-2">Address: {o.delivery_address}</p>
 
                   {/* Payment */}
                   <p className="text-xs text-muted-foreground mb-3">
-                    {o.payment_method === "cod" ? "💵 Cash on Delivery" : "✅ Paid Online"} · {o.payment_status}
+                    {o.payment_method === "cod" ? "CASH ON DELIVERY" : "PAID ONLINE"} | {o.payment_status}
                   </p>
 
                   {/* Special notes */}
                   {o.delivery_notes && (
                     <div className="bg-yellow-50 rounded-lg p-2 mb-3">
-                      <p className="text-xs text-yellow-800 font-bold">📝 NOTE: {o.delivery_notes}</p>
+                      <p className="text-xs text-yellow-800 font-bold">NOTE: {o.delivery_notes}</p>
                     </div>
                   )}
 
@@ -321,14 +318,14 @@ const MerchantDashboard = () => {
                         onClick={() => acceptOrder(o.id)}
                         className="flex-1 h-14 rounded-2xl font-heading font-bold text-base uppercase tracking-wider bg-green-600 hover:bg-green-700"
                       >
-                        ✅ ACCEPT & PREPARE
+                        ACCEPT & PREPARE
                       </Button>
                       <Button
                         onClick={() => setRejectingOrderId(o.id)}
                         variant="destructive"
                         className="h-14 rounded-2xl font-heading font-bold text-base uppercase tracking-wider px-6"
                       >
-                        ✗ REJECT
+                        REJECT
                       </Button>
                     </div>
                   )}
@@ -341,14 +338,16 @@ const MerchantDashboard = () => {
         {/* PREPARING TAB (Kitchen Queue) */}
         {tab === "preparing" && (
           <div className="space-y-4">
-            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight">🍳 KITCHEN QUEUE</h2>
+            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight flex items-center gap-2">
+              <ChefHat className="w-6 h-6 text-primary" /> KITCHEN QUEUE
+            </h2>
             {preparingOrders.length === 0 ? (
               <div className="text-center py-16 bg-card rounded-3xl shadow-card">
                 <ChefHat className="w-16 h-16 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground uppercase tracking-wider text-sm">KITCHEN IS CLEAR</p>
               </div>
             ) : preparingOrders
-              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) // oldest first
+              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
               .map((o, idx) => {
                 const elapsedSecs = Math.floor((Date.now() - new Date(o.created_at).getTime()) / 1000);
                 const elapsedMins = Math.floor(elapsedSecs / 60);
@@ -362,7 +361,7 @@ const MerchantDashboard = () => {
                         </span>
                         <div>
                           <p className="font-heading font-bold text-sm uppercase tracking-wide">{o.order_number}</p>
-                          <p className="font-heading font-bold text-primary">₹{o.total_amount}</p>
+                          <p className="font-heading font-bold text-primary">Rs.{o.total_amount}</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -388,14 +387,14 @@ const MerchantDashboard = () => {
                     </div>
 
                     {o.delivery_notes && (
-                      <p className="text-xs text-yellow-800 bg-yellow-50 rounded-lg p-2 mb-3">📝 {o.delivery_notes}</p>
+                      <p className="text-xs text-yellow-800 bg-yellow-50 rounded-lg p-2 mb-3">NOTE: {o.delivery_notes}</p>
                     )}
 
                     <Button
                       onClick={() => markReady(o.id)}
                       className="w-full h-14 rounded-2xl font-heading font-bold text-base uppercase tracking-wider"
                     >
-                      📦 MARK AS READY <ArrowRight className="w-5 h-5 ml-2" />
+                      MARK AS READY <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                   </div>
                 );
@@ -406,7 +405,9 @@ const MerchantDashboard = () => {
         {/* READY TAB (Rider Pickup) */}
         {tab === "ready" && (
           <div className="space-y-4">
-            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight">🚴 READY FOR PICKUP</h2>
+            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight flex items-center gap-2">
+              <Truck className="w-6 h-6 text-primary" /> READY FOR PICKUP
+            </h2>
             {readyOrders.length === 0 ? (
               <div className="text-center py-16 bg-card rounded-3xl shadow-card">
                 <Truck className="w-16 h-16 text-muted-foreground mx-auto mb-3" />
@@ -417,7 +418,7 @@ const MerchantDashboard = () => {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <p className="font-heading font-bold text-lg uppercase tracking-wide">{o.order_number}</p>
-                    <p className="font-heading font-bold text-primary text-xl">₹{o.total_amount}</p>
+                    <p className="font-heading font-bold text-primary text-xl">Rs.{o.total_amount}</p>
                   </div>
                   <div className="text-right">
                     <div className="flex items-center gap-1 text-sm font-heading font-bold text-muted-foreground">
@@ -432,13 +433,13 @@ const MerchantDashboard = () => {
                   ))}
                 </div>
 
-                <p className="text-xs text-muted-foreground mb-3">📍 {o.delivery_address}</p>
+                <p className="text-xs text-muted-foreground mb-3">Address: {o.delivery_address}</p>
 
                 <Button
                   onClick={() => confirmPickup(o.id)}
                   className="w-full h-14 rounded-2xl font-heading font-bold text-base uppercase tracking-wider bg-blue-600 hover:bg-blue-700"
                 >
-                  🚴 CONFIRM RIDER PICKUP
+                  CONFIRM RIDER PICKUP
                 </Button>
               </div>
             ))}
@@ -448,7 +449,9 @@ const MerchantDashboard = () => {
         {/* COMPLETED TAB */}
         {tab === "completed" && (
           <div className="space-y-3">
-            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight">📋 COMPLETED ORDERS</h2>
+            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-primary" /> COMPLETED ORDERS
+            </h2>
             {completedOrders.length === 0 ? (
               <div className="text-center py-16 bg-card rounded-3xl shadow-card">
                 <CheckCircle className="w-16 h-16 text-muted-foreground mx-auto mb-3" />
@@ -462,13 +465,13 @@ const MerchantDashboard = () => {
                   <p className="text-xs text-muted-foreground">{o.order_items?.length} items</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-heading font-bold text-primary">₹{o.total_amount}</p>
+                  <p className="font-heading font-bold text-primary">Rs.{o.total_amount}</p>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-heading font-bold uppercase ${
                     o.status === "delivered" ? "bg-green-100 text-green-700" :
                     o.status === "cancelled" ? "bg-red-100 text-red-700" :
                     "bg-purple-100 text-purple-700"
                   }`}>
-                    {o.status === "cancelled" && "✗ "}{o.status.replace(/_/g, " ")}
+                    {o.status.replace(/_/g, " ")}
                   </span>
                 </div>
               </div>
@@ -504,12 +507,14 @@ const MerchantDashboard = () => {
         {/* DASHBOARD TAB */}
         {tab === "dashboard" && (
           <div className="space-y-4">
-            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight">📊 TODAY'S STATS</h2>
+            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-primary" /> TODAY'S STATS
+            </h2>
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: "IN QUEUE", value: newOrders.length + preparingOrders.length, color: "text-primary" },
                 { label: "COMPLETED TODAY", value: todayOrders.filter(o => o.status === "delivered").length, color: "text-green-600" },
-                { label: "REVENUE TODAY", value: `₹${todayRevenue}`, color: "text-primary" },
+                { label: "REVENUE TODAY", value: `Rs.${todayRevenue}`, color: "text-primary" },
                 { label: "CANCELLED", value: todayOrders.filter(o => o.status === "cancelled").length, color: "text-red-500" },
                 { label: "TOTAL ORDERS", value: orders.length, color: "text-foreground" },
                 { label: "MENU ITEMS", value: menuItems.length, color: "text-foreground" },
