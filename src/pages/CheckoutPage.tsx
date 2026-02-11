@@ -192,7 +192,7 @@ const CheckoutPage = () => {
           order_id: orderNumber,
           order_amount: amount.toFixed(2),
           customer_name: contactName || profile?.full_name || 'Customer',
-          customer_email: profile?.email || 'customer@cafe12am.com',
+          customer_email: profile?.email || 'customer@cafe12am.store',
           customer_phone: contactPhone || profile?.phone || '9999999999',
           return_url: `${window.location.origin}/order/orders`,
         },

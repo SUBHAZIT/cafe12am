@@ -2,8 +2,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Lock, Mail, Sparkles } from "lucide-react";
+import { Lock, Mail, Sparkles, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface StaffLoginProps {
   type: "merchant" | "delivery" | "admin";
@@ -40,6 +41,10 @@ const StaffLogin = ({ type }: StaffLoginProps) => {
       <div className="absolute top-16 right-16 w-4 h-4 rotate-45 border border-primary/20" />
 
       <div className="w-full max-w-md relative z-10">
+        <Link to="/" className="inline-flex items-center gap-2 mb-6 text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-heading text-sm font-bold uppercase tracking-wider">BACK TO HOME</span>
+        </Link>
         <div className="text-center mb-8">
           <h1 className="font-heading text-5xl font-bold text-primary mb-2 uppercase tracking-tight">CAFÉ12AM</h1>
           <p className="text-muted-foreground uppercase tracking-wider text-sm">{titles[type]}</p>

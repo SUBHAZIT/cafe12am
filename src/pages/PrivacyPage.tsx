@@ -21,7 +21,7 @@ const PrivacyPage = () => {
 
         <div className="text-center section-pink rounded-2xl p-8">
           <p className="text-muted-foreground uppercase tracking-wide text-xs">
-            FOR ANY PRIVACY-RELATED CONCERNS, EMAIL US AT PRIVACY@CAFE12AM.COM
+            FOR ANY PRIVACY-RELATED CONCERNS, EMAIL US AT PRIVACY@CAFE12AM.STORE
           </p>
         </div>
       </div>

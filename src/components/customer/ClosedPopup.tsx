@@ -26,10 +26,10 @@ const ClosedPopup = ({ onDismiss, blockCheckout = false }: ClosedPopupProps) => 
           </h2>
 
           <p className="text-muted-foreground text-lg leading-relaxed mb-6 uppercase tracking-wide">
-            OUR KITCHEN IS CLOSED AFTER 2AM.
+            OUR KITCHEN IS CLOSED RIGHT NOW.
           </p>
           <p className="text-muted-foreground leading-relaxed mb-6 uppercase tracking-wide">
-            PLEASE BRING YOUR SNACK CRAVINGS BACK FROM 7AM.
+            PLEASE BRING YOUR SNACK CRAVINGS BACK FROM 7PM.
           </p>
           <p className="text-primary font-heading font-bold text-lg uppercase tracking-wider">
             THANK YOU FOR VISITING CAFE12AM
@@ -37,7 +37,7 @@ const ClosedPopup = ({ onDismiss, blockCheckout = false }: ClosedPopupProps) => 
 
           <div className="mt-8 flex items-center justify-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4" />
-            <span className="text-sm uppercase tracking-wider">OPEN DAILY 7:00 AM – 2:00 AM</span>
+            <span className="text-sm uppercase tracking-wider">OPEN DAILY 7:00 PM – 2:00 AM</span>
           </div>
 
           {onDismiss && (
