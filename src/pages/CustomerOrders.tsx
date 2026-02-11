@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import CustomerNav from "@/components/customer/CustomerNav";
-import { Package, Clock, CheckCircle, Truck, ChefHat, MapPin, Phone, XCircle } from "lucide-react";
+import { Package, Clock, CheckCircle, Truck, ChefHat, MapPin, XCircle, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
 
 const statusSteps = [
   { key: "placed", label: "Order Placed", icon: Clock },
@@ -36,6 +39,9 @@ const CustomerOrders = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [ratingComments, setRatingComments] = useState<Record<string, string>>({});
+  const [submittedRatings, setSubmittedRatings] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!profile) return;
@@ -47,13 +53,25 @@ const CustomerOrders = () => {
         .order("created_at", { ascending: false });
       if (data) {
         setOrders(data);
-        // Auto-expand the most recent active order
         const active = data.find(o => !["delivered", "cancelled"].includes(o.status));
         if (active) setExpandedOrder(active.id);
       }
       setLoading(false);
     };
+
+    // Fetch existing ratings
+    const fetchRatings = async () => {
+      const { data } = await supabase
+        .from("ratings")
+        .select("order_id")
+        .eq("user_id", profile.id);
+      if (data) {
+        setSubmittedRatings(new Set(data.map(r => r.order_id)));
+      }
+    };
+
     fetchOrders();
+    fetchRatings();
 
     const channel = supabase
       .channel("customer-orders")
@@ -72,6 +90,27 @@ const CustomerOrders = () => {
   };
 
   const isActiveOrder = (status: string) => !["delivered", "cancelled"].includes(status);
+
+  const submitRating = async (orderId: string) => {
+    if (!profile) return;
+    const rating = ratings[orderId];
+    if (!rating) {
+      toast({ title: "Please select a rating", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase.from("ratings").insert({
+      order_id: orderId,
+      user_id: profile.id,
+      rating,
+      comment: ratingComments[orderId] || null,
+    });
+    if (error) {
+      toast({ title: "Failed to submit rating", variant: "destructive" });
+    } else {
+      setSubmittedRatings(prev => new Set(prev).add(orderId));
+      toast({ title: "Thank you for your feedback! ⭐" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,12 +142,10 @@ const CustomerOrders = () => {
                   key={order.id}
                   className={`bg-card rounded-2xl shadow-card relative overflow-hidden transition-all ${isActive ? "ring-2 ring-primary/20" : ""}`}
                 >
-                  {/* Active indicator pulse */}
                   {isActive && (
                     <div className="absolute top-3 left-3 w-2 h-2 rounded-full bg-primary animate-pulse" />
                   )}
 
-                  {/* Header - always visible */}
                   <button
                     onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
                     className="w-full text-left p-5"
@@ -124,7 +161,6 @@ const CustomerOrders = () => {
                       </span>
                     </div>
 
-                    {/* Mini summary when collapsed */}
                     {!isExpanded && (
                       <div className="pl-4 mt-2 flex items-center justify-between">
                         <p className="text-xs text-muted-foreground">
@@ -135,21 +171,18 @@ const CustomerOrders = () => {
                     )}
                   </button>
 
-                  {/* Expanded content */}
                   {isExpanded && (
                     <div className="px-5 pb-5 space-y-4">
-                      {/* Real-time tracking pipeline */}
+                      {/* Tracking pipeline */}
                       {order.status !== "cancelled" && (
                         <div className="bg-secondary/50 rounded-xl p-4">
                           <p className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground mb-4">ORDER TRACKING</p>
                           <div className="flex items-center justify-between relative">
-                            {/* Progress line */}
                             <div className="absolute top-4 left-4 right-4 h-0.5 bg-border" />
                             <div
                               className="absolute top-4 left-4 h-0.5 bg-primary transition-all duration-500"
                               style={{ width: `${Math.min(100, (currentStep / (statusSteps.length - 1)) * 100)}%`, maxWidth: "calc(100% - 2rem)" }}
                             />
-
                             {statusSteps.map((step, i) => {
                               const StepIcon = step.icon;
                               const isCompleted = i <= currentStep;
@@ -173,11 +206,11 @@ const CustomerOrders = () => {
                             })}
                           </div>
 
-                          {/* ETA */}
                           {isActive && (
                             <div className="mt-4 text-center">
                               <p className="text-xs text-muted-foreground">
                                 {order.status === "placed" && "⏳ Waiting for restaurant to accept..."}
+                                {order.status === "pending" && "⏳ Waiting for restaurant to accept..."}
                                 {order.status === "preparing" && "👨‍🍳 Your food is being prepared..."}
                                 {order.status === "ready_for_pickup" && "📦 Your order is ready! Waiting for rider..."}
                                 {order.status === "rider_assigned" && "🚴 Rider assigned! Picking up your order..."}
@@ -185,6 +218,16 @@ const CustomerOrders = () => {
                               </p>
                             </div>
                           )}
+                        </div>
+                      )}
+
+                      {/* ===== OTP SECTION - Prominent display ===== */}
+                      {order.delivery_otp && order.status === "out_for_delivery" && (
+                        <div className="text-center p-5 bg-primary/10 rounded-2xl border-2 border-dashed border-primary/40 animate-pulse">
+                          <p className="text-xs font-heading font-bold text-primary uppercase tracking-wider mb-2">🔐 YOUR DELIVERY OTP</p>
+                          <p className="font-heading text-4xl font-bold text-primary tracking-[0.4em] my-3">{order.delivery_otp}</p>
+                          <p className="text-xs text-muted-foreground">Share this code with your delivery partner to confirm delivery</p>
+                          <p className="text-[10px] text-red-500 font-bold mt-2 uppercase">DO NOT SHARE BEFORE RECEIVING YOUR ORDER</p>
                         </div>
                       )}
 
@@ -210,15 +253,6 @@ const CustomerOrders = () => {
                         </div>
                       )}
 
-                      {/* OTP for delivery */}
-                      {order.delivery_otp && isActive && order.status === "out_for_delivery" && (
-                        <div className="text-center p-3 bg-primary/10 rounded-xl border border-dashed border-primary/30">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Delivery OTP</p>
-                          <p className="font-heading text-2xl font-bold text-primary tracking-[0.3em]">{order.delivery_otp}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1">Share this with your delivery partner</p>
-                        </div>
-                      )}
-
                       {/* Total */}
                       <div className="border-t border-border pt-3 flex justify-between items-center">
                         <div>
@@ -229,6 +263,45 @@ const CustomerOrders = () => {
                         </div>
                         <span className="font-heading font-bold text-primary text-xl">₹{order.total_amount}</span>
                       </div>
+
+                      {/* ===== RATING SECTION - After delivery ===== */}
+                      {order.status === "delivered" && !submittedRatings.has(order.id) && (
+                        <div className="bg-secondary/50 rounded-xl p-4 space-y-3">
+                          <p className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground">RATE YOUR ORDER</p>
+                          <div className="flex justify-center gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                onClick={() => setRatings(prev => ({ ...prev, [order.id]: star }))}
+                                className="transition-transform hover:scale-110"
+                              >
+                                <Star
+                                  className={`w-8 h-8 ${(ratings[order.id] || 0) >= star ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
+                                />
+                              </button>
+                            ))}
+                          </div>
+                          <Textarea
+                            placeholder="Tell us about your experience (optional)"
+                            value={ratingComments[order.id] || ""}
+                            onChange={(e) => setRatingComments(prev => ({ ...prev, [order.id]: e.target.value }))}
+                            className="rounded-xl bg-card border-0 text-sm min-h-[60px]"
+                          />
+                          <Button
+                            onClick={() => submitRating(order.id)}
+                            disabled={!ratings[order.id]}
+                            className="w-full rounded-full font-heading font-bold text-xs uppercase tracking-wider"
+                          >
+                            SUBMIT RATING
+                          </Button>
+                        </div>
+                      )}
+
+                      {order.status === "delivered" && submittedRatings.has(order.id) && (
+                        <div className="text-center p-3 bg-green-50 rounded-xl">
+                          <p className="text-xs font-heading font-bold text-green-600 uppercase tracking-wider">⭐ THANKS FOR YOUR FEEDBACK!</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
