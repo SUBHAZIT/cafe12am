@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const Footer = () => {
   return (
     <footer className="bg-foreground text-card py-16 px-4">
@@ -15,14 +17,19 @@ const Footer = () => {
           <div>
             <h4 className="font-heading text-sm font-bold mb-4 uppercase tracking-wider">QUICK LINKS</h4>
             <ul className="space-y-2">
-              {["ABOUT US", "MENU", "CAREERS", "BLOG"].map((l) => (
-                <li key={l}>
-                  <a
-                    href="#"
+              {[
+                { label: "ABOUT US", path: "/about" },
+                { label: "MENU", path: "/menu" },
+                { label: "CAREERS", path: "/careers" },
+                { label: "BLOG", path: "/blog" },
+              ].map((l) => (
+                <li key={l.label}>
+                  <Link
+                    to={l.path}
                     className="text-card/60 hover:text-card text-sm transition-colors uppercase tracking-wide"
                   >
-                    {l}
-                  </a>
+                    {l.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -32,14 +39,19 @@ const Footer = () => {
           <div>
             <h4 className="font-heading text-sm font-bold mb-4 uppercase tracking-wider">SUPPORT</h4>
             <ul className="space-y-2">
-              {["HELP & FAQ", "CONTACT US", "TERMS OF SERVICE", "PRIVACY POLICY"].map((l) => (
-                <li key={l}>
-                  <a
-                    href="#"
+              {[
+                { label: "HELP & FAQ", path: "/help" },
+                { label: "CONTACT US", path: "/contact" },
+                { label: "TERMS OF SERVICE", path: "/terms" },
+                { label: "PRIVACY POLICY", path: "/privacy" },
+              ].map((l) => (
+                <li key={l.label}>
+                  <Link
+                    to={l.path}
                     className="text-card/60 hover:text-card text-sm transition-colors uppercase tracking-wide"
                   >
-                    {l}
-                  </a>
+                    {l.label}
+                  </Link>
                 </li>
               ))}
             </ul>

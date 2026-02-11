@@ -21,6 +21,14 @@ import CustomerProfile from "@/pages/CustomerProfile";
 import MerchantProfile from "@/pages/MerchantProfile";
 import DeliveryProfile from "@/pages/DeliveryProfile";
 import AdminProfile from "@/pages/AdminProfile";
+import AboutPage from "@/pages/AboutPage";
+import MenuPage from "@/pages/MenuPage";
+import CareersPage from "@/pages/CareersPage";
+import BlogPage from "@/pages/BlogPage";
+import HelpPage from "@/pages/HelpPage";
+import ContactPage from "@/pages/ContactPage";
+import TermsPage from "@/pages/TermsPage";
+import PrivacyPage from "@/pages/PrivacyPage";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +57,14 @@ const App = () => (
             <Routes>
               {/* Public */}
               <Route path="/" element={<Index />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/menu" element={<MenuPage />} />
+              <Route path="/careers" element={<CareersPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/help" element={<HelpPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/login" element={<CustomerLogin />} />
               <Route path="/merchant/login" element={<StaffLogin type="merchant" />} />
               <Route path="/delivery/login" element={<StaffLogin type="delivery" />} />
