@@ -169,10 +169,10 @@ const CartPage = () => {
 
       {/* Checkout bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-        <button className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow w-full">
+        <Link to="/order/checkout" className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow w-full">
           <p className="font-heading font-bold text-sm uppercase tracking-wider">₹{(total + 30).toFixed(0)}</p>
-          <span className="font-heading font-bold uppercase tracking-wider text-sm">PLACE ORDER →</span>
-        </button>
+          <span className="font-heading font-bold uppercase tracking-wider text-sm">PROCEED TO CHECKOUT →</span>
+        </Link>
       </div>
     </div>
   );

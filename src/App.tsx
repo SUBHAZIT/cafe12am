@@ -13,6 +13,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import CustomerMenu from "@/pages/CustomerMenu";
 import CustomerOrders from "@/pages/CustomerOrders";
 import CartPage from "@/pages/CartPage";
+import CheckoutPage from "@/pages/CheckoutPage";
 import AdminPanel from "@/pages/AdminPanel";
 import MerchantDashboard from "@/pages/MerchantDashboard";
 import DeliveryPartnerApp from "@/pages/DeliveryPartnerApp";
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/order/orders" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerOrders /></ProtectedRoute>} />
               <Route path="/order/profile" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerProfile /></ProtectedRoute>} />
               <Route path="/order/cart" element={<CartPage />} />
+              <Route path="/order/checkout" element={<ProtectedRoute allowedRoles={["customer"]}><CheckoutPage /></ProtectedRoute>} />
 
               {/* Admin */}
               <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminPanel /></ProtectedRoute>} />
