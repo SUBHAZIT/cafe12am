@@ -3,6 +3,7 @@ import foodMaggi from "@/assets/food-maggi.png";
 import foodFries from "@/assets/food-fries.png";
 import foodCoffee from "@/assets/food-coffee.png";
 import foodSandwich from "@/assets/food-sandwich.png";
+import tobaccoBanner from "@/assets/tobacco-banner.png";
 
 const defaultCategories = [
   { name: "Burgers", image: foodBurger },
@@ -13,6 +14,7 @@ const defaultCategories = [
   { name: "Snacks", image: foodFries },
   { name: "Combos", image: foodBurger },
   { name: "Desserts", image: foodCoffee },
+  { name: "Pan Masala", image: tobaccoBanner },
 ];
 
 interface CategoryBarProps {
