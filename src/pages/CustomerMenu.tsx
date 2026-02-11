@@ -112,13 +112,13 @@ const CustomerMenu = () => {
 
       <CategoryBar selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
 
-      {/* Tobacco banner - only when Pan Masala category is selected */}
-      {selectedCategory === "Pan Masala" && (
+      {/* Tobacco banner - only when Paan Corner category is selected */}
+      {selectedCategory === "Paan Corner" && (
         <TobaccoBanner onConfirmed={() => setTobaccoVerified(true)} />
       )}
 
       {/* Food grid - hide when Pan Masala selected and not verified */}
-      {selectedCategory !== "Pan Masala" && (
+      {selectedCategory !== "Paan Corner" && (
         <section className="px-4 pb-24">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
