@@ -18,7 +18,7 @@ const MenuPage = () => {
             { name: "FRIES & SIDES", desc: "CRISPY, GOLDEN, AND PERFECTLY SEASONED", icon: "🍟" },
             { name: "SANDWICHES", desc: "PACKED WITH FLAVOR, PERFECT FOR A QUICK BITE", icon: "🥪" },
             { name: "BEVERAGES", desc: "FROM ICED COFFEE TO FRAPPES — STAY REFRESHED", icon: "☕" },
-            { name: "COMBO DEALS", desc: "STUDENT-FRIENDLY COMBOS THAT SAVE YOU MORE", icon: "🎉" },
+            { name: "COMBO DEALS", desc: "STUDENT-FRIENDLY COMBOS THAT SAVE YOU MORE", icon: "🌙" },
           ].map((cat) => (
             <div key={cat.name} className="relative bg-card rounded-2xl p-8 shadow-card border border-border text-center group hover:shadow-lg transition-all">
               <span className="text-4xl mb-4 block">{cat.icon}</span>
