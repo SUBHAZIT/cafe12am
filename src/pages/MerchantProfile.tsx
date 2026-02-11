@@ -19,7 +19,7 @@ const MerchantProfile = () => {
   const [section, setSection] = useState<Section>("business");
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ full_name: "", phone: "", email: "", address: "" });
-  const [storeForm, setStoreForm] = useState({ store_name: "", store_description: "", opening_time: "21:00", closing_time: "02:00" });
+  const [storeForm, setStoreForm] = useState({ store_name: "", store_description: "", opening_time: "07:00", closing_time: "02:00" });
   const [settings, setSettings] = useState<any>(null);
   const [bankDetails, setBankDetails] = useState<any>(null);
   const [showBankForm, setShowBankForm] = useState(false);
