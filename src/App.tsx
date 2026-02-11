@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CustomerLogin from "@/components/auth/CustomerLogin";
@@ -43,35 +44,37 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<CustomerLogin />} />
-            <Route path="/merchant/login" element={<StaffLogin type="merchant" />} />
-            <Route path="/delivery/login" element={<StaffLogin type="delivery" />} />
-            <Route path="/admin/login" element={<StaffLogin type="admin" />} />
-            <Route path="/dashboard" element={<RoleRedirector />} />
+          <CartProvider>
+            <Routes>
+              {/* Public */}
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<CustomerLogin />} />
+              <Route path="/merchant/login" element={<StaffLogin type="merchant" />} />
+              <Route path="/delivery/login" element={<StaffLogin type="delivery" />} />
+              <Route path="/admin/login" element={<StaffLogin type="admin" />} />
+              <Route path="/dashboard" element={<RoleRedirector />} />
 
-            {/* Customer */}
-            <Route path="/order" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerMenu /></ProtectedRoute>} />
-            <Route path="/order/orders" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerOrders /></ProtectedRoute>} />
-            <Route path="/order/profile" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerProfile /></ProtectedRoute>} />
-            <Route path="/order/cart" element={<CartPage />} />
+              {/* Customer */}
+              <Route path="/order" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerMenu /></ProtectedRoute>} />
+              <Route path="/order/orders" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerOrders /></ProtectedRoute>} />
+              <Route path="/order/profile" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerProfile /></ProtectedRoute>} />
+              <Route path="/order/cart" element={<CartPage />} />
 
-            {/* Admin */}
-            <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminPanel /></ProtectedRoute>} />
-            <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={["admin"]}><AdminProfile /></ProtectedRoute>} />
+              {/* Admin */}
+              <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminPanel /></ProtectedRoute>} />
+              <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={["admin"]}><AdminProfile /></ProtectedRoute>} />
 
-            {/* Merchant */}
-            <Route path="/merchant" element={<ProtectedRoute allowedRoles={["merchant"]}><MerchantDashboard /></ProtectedRoute>} />
-            <Route path="/merchant/profile" element={<ProtectedRoute allowedRoles={["merchant"]}><MerchantProfile /></ProtectedRoute>} />
+              {/* Merchant */}
+              <Route path="/merchant" element={<ProtectedRoute allowedRoles={["merchant"]}><MerchantDashboard /></ProtectedRoute>} />
+              <Route path="/merchant/profile" element={<ProtectedRoute allowedRoles={["merchant"]}><MerchantProfile /></ProtectedRoute>} />
 
-            {/* Delivery Partner */}
-            <Route path="/delivery" element={<ProtectedRoute allowedRoles={["delivery_partner"]}><DeliveryPartnerApp /></ProtectedRoute>} />
-            <Route path="/delivery/profile" element={<ProtectedRoute allowedRoles={["delivery_partner"]}><DeliveryProfile /></ProtectedRoute>} />
+              {/* Delivery Partner */}
+              <Route path="/delivery" element={<ProtectedRoute allowedRoles={["delivery_partner"]}><DeliveryPartnerApp /></ProtectedRoute>} />
+              <Route path="/delivery/profile" element={<ProtectedRoute allowedRoles={["delivery_partner"]}><DeliveryProfile /></ProtectedRoute>} />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

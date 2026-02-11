@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import CustomerNav from "@/components/customer/CustomerNav";
 import CategoryBar from "@/components/customer/CategoryBar";
 import FoodCard from "@/components/customer/FoodCard";
 import ClosedPopup from "@/components/customer/ClosedPopup";
 import { useOperatingHours } from "@/hooks/useOperatingHours";
-import { Search, Sparkles, Cigarette } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import TobaccoBanner from "@/components/customer/TobaccoBanner";
+import CouponBanner from "@/components/customer/CouponBanner";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
 import foodBurger from "@/assets/food-burger.png";
 import foodMaggi from "@/assets/food-maggi.png";
 import foodFries from "@/assets/food-fries.png";
@@ -34,9 +35,9 @@ const dummyItems = [
 const CustomerMenu = () => {
   const { isOpen } = useOperatingHours();
   const { user, profile } = useAuth();
+  const { items: cartItems, addItem, removeItem, cartCount } = useCart();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [cart, setCart] = useState<Record<string, number>>({});
   const [showClosedBanner, setShowClosedBanner] = useState(true);
   const [showCheckoutBlock, setShowCheckoutBlock] = useState(false);
   const [tobaccoVerified, setTobaccoVerified] = useState(false);
@@ -54,32 +55,21 @@ const CustomerMenu = () => {
     ? dbItems.map((i) => ({ ...i, category: i.categories?.name || "Other" }))
     : dummyItems;
 
-  // Filter: exclude Paan Corner items from regular views
   const isPaanCornerView = selectedCategory === "Paan Corner";
   const filtered = items.filter((item) => {
     if (isPaanCornerView) return item.category === "Paan Corner";
-    // Hide Paan Corner items from ALL and other categories
     if (item.category === "Paan Corner") return false;
     const matchCategory = !selectedCategory || item.category === selectedCategory;
     const matchSearch = !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchSearch;
   });
 
-  const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
-
-  const addToCart = (id: string) => {
-    setCart((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-    toast({ title: "Added to cart!", description: "Item added successfully" });
+  const handleAdd = (id: string) => {
+    const item = items.find((i) => i.id === id);
+    if (item) addItem({ id: item.id, name: item.name, price: item.price, image_url: item.image_url });
   };
 
-  const removeFromCart = (id: string) => {
-    setCart((prev) => {
-      const newCart = { ...prev };
-      if (newCart[id] > 1) newCart[id]--;
-      else delete newCart[id];
-      return newCart;
-    });
-  };
+  const handleRemove = (id: string) => removeItem(id);
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,12 +107,14 @@ const CustomerMenu = () => {
 
       <CategoryBar selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
 
+      {/* Coupon offers */}
+      {selectedCategory !== "Paan Corner" && <CouponBanner />}
+
       {/* Paan Corner: banner then items after verification */}
       {selectedCategory === "Paan Corner" && !tobaccoVerified && (
         <TobaccoBanner onConfirmed={() => setTobaccoVerified(true)} />
       )}
 
-      {/* Paan Corner items grid - show after age verification */}
       {selectedCategory === "Paan Corner" && tobaccoVerified && (
         <section className="px-4 pb-24">
           <div className="max-w-7xl mx-auto">
@@ -139,20 +131,7 @@ const CustomerMenu = () => {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {filtered.map((item) => (
-                  <FoodCard
-                    key={item.id}
-                    id={item.id}
-                    name={item.name}
-                    description={item.description}
-                    price={item.price}
-                    image_url={item.image_url}
-                    is_veg={item.is_veg}
-                    preparation_time_mins={item.preparation_time_mins}
-                    is_available={item.is_available}
-                    quantity={cart[item.id] || 0}
-                    onAdd={addToCart}
-                    onRemove={removeFromCart}
-                  />
+                  <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} onAdd={handleAdd} onRemove={handleRemove} />
                 ))}
               </div>
             )}
@@ -160,7 +139,7 @@ const CustomerMenu = () => {
         </section>
       )}
 
-      {/* Regular food grid - hide when Paan Corner is selected */}
+      {/* Regular food grid */}
       {selectedCategory !== "Paan Corner" && (
         <section className="px-4 pb-24">
           <div className="max-w-7xl mx-auto">
@@ -176,20 +155,7 @@ const CustomerMenu = () => {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {filtered.map((item) => (
-                  <FoodCard
-                    key={item.id}
-                    id={item.id}
-                    name={item.name}
-                    description={item.description}
-                    price={item.price}
-                    image_url={item.image_url}
-                    is_veg={item.is_veg}
-                    preparation_time_mins={item.preparation_time_mins}
-                    is_available={item.is_available}
-                    quantity={cart[item.id] || 0}
-                    onAdd={addToCart}
-                    onRemove={removeFromCart}
-                  />
+                  <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} onAdd={handleAdd} onRemove={handleRemove} />
                 ))}
               </div>
             )}
@@ -201,18 +167,12 @@ const CustomerMenu = () => {
       {cartCount > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
           {!isOpen ? (
-            <button
-              onClick={() => setShowCheckoutBlock(true)}
-              className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow w-full"
-            >
+            <button onClick={() => setShowCheckoutBlock(true)} className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow w-full">
               <p className="font-heading font-bold text-sm uppercase tracking-wider">{cartCount} ITEMS IN CART</p>
               <span className="font-heading font-bold uppercase tracking-wider text-sm">VIEW CART →</span>
             </button>
           ) : (
-            <a
-              href="/order/cart"
-              className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow"
-            >
+            <a href="/order/cart" className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow">
               <p className="font-heading font-bold text-sm uppercase tracking-wider">{cartCount} ITEMS IN CART</p>
               <span className="font-heading font-bold uppercase tracking-wider text-sm">VIEW CART →</span>
             </a>
