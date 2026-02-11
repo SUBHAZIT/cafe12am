@@ -232,14 +232,14 @@ const CheckoutPage = () => {
   const sendOrderEmail = async (orderNumber: string, itemsList: { name: string; quantity: number; price: number }[], totalAmount: number) => {
     try {
       const itemsHtml = itemsList.map(i => `${i.name} x${i.quantity} — ₹${i.price * i.quantity}`).join("\n");
-      await emailjs.send("service_iyz5u2i", "template_order_confirm", {
+      await emailjs.send("service_iyz5u2i", "template_b6yper6", {
         to_email: profile?.email || user?.email || "",
         to_name: contactName || profile?.full_name || "Customer",
         order_id: orderNumber,
         order_items: itemsHtml,
         total_amount: `₹${totalAmount.toFixed(0)}`,
         message: `Thank you for ordering from CAFÉ12AM! Your order #${orderNumber} has been placed successfully. We'll deliver it to you soon! 🎉`,
-      }, "YOUR_PUBLIC_KEY");
+      }, "VsUWcXNxfOtX_MoJs");
     } catch (err) {
       console.log("Email sending skipped or failed:", err);
     }

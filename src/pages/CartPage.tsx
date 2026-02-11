@@ -157,11 +157,11 @@ const CartPage = () => {
             )}
             <div className="flex justify-between">
               <span className="text-muted-foreground uppercase tracking-wide">Delivery Fee</span>
-              <span className="font-heading font-bold text-foreground">₹30</span>
+              <span className="font-heading font-bold text-green-600">FREE</span>
             </div>
             <div className="border-t border-border pt-2 flex justify-between">
               <span className="font-heading font-bold uppercase tracking-wider text-foreground">Total</span>
-              <span className="font-heading font-bold text-lg text-primary">₹{(total + 30).toFixed(0)}</span>
+              <span className="font-heading font-bold text-lg text-primary">₹{total.toFixed(0)}</span>
             </div>
           </div>
         </div>
@@ -170,7 +170,7 @@ const CartPage = () => {
       {/* Checkout bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
         <Link to="/order/checkout" className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow w-full">
-          <p className="font-heading font-bold text-sm uppercase tracking-wider">₹{(total + 30).toFixed(0)}</p>
+          <p className="font-heading font-bold text-sm uppercase tracking-wider">₹{total.toFixed(0)}</p>
           <span className="font-heading font-bold uppercase tracking-wider text-sm">PROCEED TO CHECKOUT →</span>
         </Link>
       </div>
