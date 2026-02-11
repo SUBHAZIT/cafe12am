@@ -125,8 +125,26 @@ const MerchantDashboard = () => {
 
   const markReady = async (orderId: string) => {
     await supabase.from("orders").update({ status: "ready_for_pickup" }).eq("id", orderId);
+    
+    // Auto-assign to an online delivery partner
+    const { data: onlinePartners } = await supabase
+      .from("delivery_partner_settings")
+      .select("partner_id")
+      .eq("is_online", true)
+      .limit(1);
+    
+    if (onlinePartners && onlinePartners.length > 0) {
+      await supabase.from("delivery_assignments").insert([{
+        order_id: orderId,
+        delivery_partner_id: onlinePartners[0].partner_id,
+        status: "assigned"
+      }]);
+      toast({ title: "Order ready! Rider assigned." });
+    } else {
+      toast({ title: "Order ready! No online riders found.", variant: "destructive" });
+    }
+    
     fetchOrders();
-    toast({ title: "Order marked as ready!" });
   };
 
   const confirmPickup = async (orderId: string) => {
