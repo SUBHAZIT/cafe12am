@@ -904,6 +904,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_delivery_partner_order_profile_ids: {
+        Args: { _user_id: string }
+        Returns: string[]
+      }
+      get_profile_id_for_user: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
