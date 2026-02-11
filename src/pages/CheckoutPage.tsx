@@ -231,19 +231,27 @@ const CheckoutPage = () => {
 
   const sendOrderEmail = async (orderNumber: string, itemsList: { name: string; quantity: number; price: number }[], totalAmount: number) => {
     try {
-      emailjs.init("VsUWcXNxfOtX_MoJs");
+      const customerEmail = profile?.email || user?.email || "";
+      const customerName = contactName || profile?.full_name || "Customer";
+      if (!customerEmail) {
+        console.warn("No customer email found, skipping email");
+        return;
+      }
       const itemsHtml = itemsList.map(i => `${i.name} x${i.quantity} — ₹${i.price * i.quantity}`).join("\n");
+      console.log("Sending email to:", customerEmail, "Order:", orderNumber);
       const result = await emailjs.send("service_iyz5u2i", "template_b6yper6", {
-        to_email: profile?.email || user?.email || "",
-        to_name: contactName || profile?.full_name || "Customer",
+        to_email: customerEmail,
+        to_name: customerName,
         order_id: orderNumber,
         order_items: itemsHtml,
         total_amount: `₹${totalAmount.toFixed(0)}`,
-        message: `Thank you for ordering from CAFÉ12AM! Your order #${orderNumber} has been placed successfully. We'll deliver it to you soon! 🎉`,
-      });
+        message: `Thank you for ordering from CAFÉ12AM! Your order #${orderNumber} has been placed successfully.`,
+      }, "VsUWcXNxfOtX_MoJs");
       console.log("Email sent successfully:", result);
-    } catch (err) {
+      toast({ title: "Confirmation email sent! 📧" });
+    } catch (err: any) {
       console.error("Email sending failed:", err);
+      toast({ title: "Email could not be sent", description: err?.text || err?.message || "Check email settings", variant: "destructive" });
     }
   };
 
