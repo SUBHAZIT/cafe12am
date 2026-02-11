@@ -46,7 +46,8 @@ const CustomerMenu = () => {
 
   useEffect(() => {
     const fetchMenu = async () => {
-      const { data } = await supabase.from("menu_items").select("*, categories(name)").eq("is_available", true);
+      // Fetch ALL menu items (including unavailable ones to show as out of stock)
+      const { data } = await supabase.from("menu_items").select("*, categories(name)");
       if (data && data.length > 0) setDbItems(data);
     };
     fetchMenu();
@@ -67,7 +68,7 @@ const CustomerMenu = () => {
 
   const handleAdd = (id: string) => {
     const item = items.find((i) => i.id === id);
-    if (item) addItem({ id: item.id, name: item.name, price: item.price, image_url: item.image_url });
+    if (item && item.is_available) addItem({ id: item.id, name: item.name, price: item.price, image_url: item.image_url });
   };
 
   const handleRemove = (id: string) => removeItem(id);
@@ -108,7 +109,6 @@ const CustomerMenu = () => {
 
       <CategoryBar selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
 
-      {/* Paan Corner: banner then items after verification */}
       {selectedCategory === "Paan Corner" && !tobaccoVerified && (
         <TobaccoBanner onConfirmed={() => setTobaccoVerified(true)} />
       )}
@@ -137,7 +137,6 @@ const CustomerMenu = () => {
         </section>
       )}
 
-      {/* Regular food grid */}
       {selectedCategory !== "Paan Corner" && (
         <section className="px-4 pb-24">
           <div className="max-w-7xl mx-auto">
@@ -171,7 +170,6 @@ const CustomerMenu = () => {
         </section>
       )}
 
-      {/* Floating cart bar */}
       {cartCount > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
           {!isOpen ? (

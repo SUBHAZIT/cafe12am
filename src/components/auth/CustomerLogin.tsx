@@ -2,12 +2,12 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, ArrowRight, Sparkles, User, Phone, MapPin } from "lucide-react";
+import { Mail, Lock, ArrowRight, Sparkles, User, Phone, MapPin, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 const CustomerLogin = () => {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -15,6 +15,7 @@ const CustomerLogin = () => {
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
 
   const validatePhone = (p: string) => /^[6-9]\d{9}$/.test(p);
@@ -84,6 +85,50 @@ const CustomerLogin = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast({ title: "Email required", description: "Please enter your email address", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/login",
+    });
+    setLoading(false);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setResetSent(true);
+      toast({ title: "Reset link sent!", description: "Check your email for the password reset link." });
+    }
+  };
+
+  if (resetSent) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+        <div className="absolute top-20 left-10 w-64 h-64 rounded-full border border-primary/10 animate-float" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full border border-primary/10 animate-float-delayed" />
+        <div className="w-full max-w-md relative z-10">
+          <div className="text-center mb-8">
+            <h1 className="font-heading text-5xl font-bold text-primary mb-2 uppercase tracking-tight">CAFÉ12AM</h1>
+            <p className="text-muted-foreground uppercase tracking-wider text-sm">MIDNIGHT SNACK DESTINATION</p>
+          </div>
+          <div className="bg-card rounded-3xl p-8 shadow-card text-center">
+            <KeyRound className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h2 className="font-heading text-xl font-bold uppercase tracking-wide mb-2">CHECK YOUR EMAIL</h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              We've sent a password reset link to <strong>{email}</strong>. Click the link to reset your password.
+            </p>
+            <Button variant="outline" onClick={() => { setResetSent(false); setMode("signin"); }} className="rounded-xl uppercase tracking-wide font-heading font-bold">
+              BACK TO SIGN IN
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (emailSent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
@@ -111,7 +156,6 @@ const CustomerLogin = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-64 h-64 rounded-full border border-primary/10 animate-float" />
       <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full border border-primary/10 animate-float-delayed" />
       <div className="absolute top-1/3 right-1/4 w-3 h-3 rounded-full bg-primary/20 animate-pulse" />
@@ -133,7 +177,7 @@ const CustomerLogin = () => {
             <div className="flex items-center gap-2 mb-6">
               <Sparkles className="w-5 h-5 text-primary" />
               <h2 className="font-heading text-lg font-bold uppercase tracking-wide">
-                {mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
+                {mode === "signin" ? "SIGN IN" : mode === "signup" ? "CREATE ACCOUNT" : "FORGOT PASSWORD"}
               </h2>
             </div>
 
@@ -185,39 +229,66 @@ const CustomerLogin = () => {
                 />
               </div>
 
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 h-14 rounded-xl text-base bg-secondary border-0"
-                />
-              </div>
+              {mode !== "forgot" && (
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-12 h-14 rounded-xl text-base bg-secondary border-0"
+                  />
+                </div>
+              )}
 
-              <Button
-                onClick={mode === "signin" ? handleSignIn : handleSignUp}
-                disabled={loading}
-                className="w-full h-14 rounded-xl text-lg font-heading font-bold uppercase tracking-wide"
-              >
-                {loading
-                  ? (mode === "signin" ? "SIGNING IN..." : "CREATING ACCOUNT...")
-                  : (mode === "signin" ? "SIGN IN" : "SIGN UP")}
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+              {mode === "forgot" ? (
+                <Button
+                  onClick={handleForgotPassword}
+                  disabled={loading}
+                  className="w-full h-14 rounded-xl text-lg font-heading font-bold uppercase tracking-wide"
+                >
+                  {loading ? "SENDING..." : "SEND RESET LINK"}
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={mode === "signin" ? handleSignIn : handleSignUp}
+                  disabled={loading}
+                  className="w-full h-14 rounded-xl text-lg font-heading font-bold uppercase tracking-wide"
+                >
+                  {loading
+                    ? (mode === "signin" ? "SIGNING IN..." : "CREATING ACCOUNT...")
+                    : (mode === "signin" ? "SIGN IN" : "SIGN UP")}
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              )}
 
-              <div className="text-center pt-2">
-                {mode === "signin" ? (
-                  <p className="text-sm text-muted-foreground uppercase tracking-wide">
-                    DON'T HAVE AN ACCOUNT?{" "}
-                    <button onClick={() => setMode("signup")} className="text-primary font-bold hover:underline">
-                      SIGN UP
+              <div className="text-center pt-2 space-y-2">
+                {mode === "signin" && (
+                  <>
+                    <button onClick={() => setMode("forgot")} className="text-sm text-primary font-bold hover:underline uppercase tracking-wide block w-full">
+                      FORGOT PASSWORD?
                     </button>
-                  </p>
-                ) : (
+                    <p className="text-sm text-muted-foreground uppercase tracking-wide">
+                      DON'T HAVE AN ACCOUNT?{" "}
+                      <button onClick={() => setMode("signup")} className="text-primary font-bold hover:underline">
+                        SIGN UP
+                      </button>
+                    </p>
+                  </>
+                )}
+                {mode === "signup" && (
                   <p className="text-sm text-muted-foreground uppercase tracking-wide">
                     ALREADY HAVE AN ACCOUNT?{" "}
+                    <button onClick={() => setMode("signin")} className="text-primary font-bold hover:underline">
+                      SIGN IN
+                    </button>
+                  </p>
+                )}
+                {mode === "forgot" && (
+                  <p className="text-sm text-muted-foreground uppercase tracking-wide">
+                    REMEMBER YOUR PASSWORD?{" "}
                     <button onClick={() => setMode("signin")} className="text-primary font-bold hover:underline">
                       SIGN IN
                     </button>

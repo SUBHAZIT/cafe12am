@@ -35,7 +35,7 @@ serve(async (req) => {
     }
 
     // Fetch all data in parallel
-    const [rolesRes, profilesRes, bankRes, ordersRes, couponsRes, addressesRes, merchantSettingsRes, deliverySettingsRes] = await Promise.all([
+    const [rolesRes, profilesRes, bankRes, ordersRes, couponsRes, addressesRes, merchantSettingsRes, deliverySettingsRes, assignmentsRes] = await Promise.all([
       adminClient.from("user_roles").select("*"),
       adminClient.from("profiles").select("*"),
       adminClient.from("bank_details").select("*"),
@@ -44,6 +44,7 @@ serve(async (req) => {
       adminClient.from("saved_addresses").select("*"),
       adminClient.from("merchant_settings").select("*"),
       adminClient.from("delivery_partner_settings").select("*"),
+      adminClient.from("delivery_assignments").select("*").order("created_at", { ascending: false }),
     ]);
 
     // Build user map
@@ -91,6 +92,7 @@ serve(async (req) => {
         customers,
         orders: ordersRes.data || [],
         coupons: couponsRes.data || [],
+        delivery_assignments: assignmentsRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
