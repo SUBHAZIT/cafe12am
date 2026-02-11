@@ -201,31 +201,22 @@ const CheckoutPage = () => {
         throw new Error(fnError?.message || sessionData?.error || 'Failed to create payment session');
       }
 
-      // Load Cashfree JS SDK and open payment
-      const cashfree = (window as any).Cashfree;
-      if (!cashfree) {
-        toast({ title: "Payment SDK loading...", description: "Please wait and try again" });
-        return false;
-      }
+      // Use the npm SDK
+      const { load } = await import("@cashfreepayments/cashfree-js");
+      const cashfree = await load({ mode: "sandbox" }); // Change to "production" for live
 
-      const cfInstance = cashfree({
-        mode: "sandbox", // Change to "production" for live
-      });
-
-      const result = await cfInstance.checkout({
+      const result = await cashfree.checkout({
         paymentSessionId: sessionData.payment_session_id,
         redirectTarget: "_modal",
       });
 
       if (result.error) {
         toast({ title: "Payment failed", description: result.error.message, variant: "destructive" });
-        // Update order payment status to failed
         await supabase.from("orders").update({ payment_status: "failed" }).eq("id", orderId);
         return false;
       }
 
       if (result.paymentDetails) {
-        // Payment successful
         await supabase.from("orders").update({ payment_status: "paid" }).eq("id", orderId);
         return true;
       }
