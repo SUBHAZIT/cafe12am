@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Package, DollarSign, Navigation, LogOut, ToggleLeft, ToggleRight, CheckCircle, Truck, Building2, User } from "lucide-react";
+import { Package, DollarSign, Navigation, LogOut, ToggleLeft, ToggleRight, CheckCircle, Truck, Building2, User, MapPin, ExternalLink, Phone, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
@@ -39,7 +39,7 @@ const DeliveryPartnerApp = () => {
 
   const fetchAssignments = async () => {
     if (!profile) return;
-    const { data } = await supabase.from("delivery_assignments").select("*, orders(*)").eq("delivery_partner_id", profile.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("delivery_assignments").select("*, orders(*, order_items(*))").eq("delivery_partner_id", profile.id).order("created_at", { ascending: false });
     if (data) setAssignments(data);
   };
 
@@ -89,7 +89,6 @@ const DeliveryPartnerApp = () => {
     if (status === "delivered") updates.delivered_at = new Date().toISOString();
     await supabase.from("delivery_assignments").update(updates).eq("id", id);
     
-    // Update order status
     const assignment = assignments.find(a => a.id === id);
     if (assignment) {
       const orderStatus = status === "picked_up" ? "out_for_delivery" : status === "delivered" ? "delivered" : "rider_assigned";
@@ -112,6 +111,17 @@ const DeliveryPartnerApp = () => {
     toast({ title: "Bank details saved!" });
     setShowBankForm(false);
     fetchBankDetails();
+  };
+
+  const getGoogleMapsLink = (address: string) => {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  };
+
+  const getTimeSince = (dateStr: string) => {
+    const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    return `${Math.floor(mins / 60)}h ${mins % 60}m ago`;
   };
 
   const tabs = [
@@ -159,27 +169,65 @@ const DeliveryPartnerApp = () => {
               <div key={a.id} className="bg-card rounded-2xl p-5 shadow-card relative overflow-hidden">
                 <div className="absolute top-2 right-2 w-2 h-2 rotate-45 border border-primary/20" />
                 <div className="flex justify-between items-start mb-3">
-                  <p className="font-heading font-bold text-sm uppercase tracking-wide">{a.orders?.order_number || "ORDER"}</p>
+                  <div>
+                    <p className="font-heading font-bold text-sm uppercase tracking-wide">{a.orders?.order_number || "ORDER"}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {getTimeSince(a.created_at)}
+                    </p>
+                  </div>
                   <span className="text-xs uppercase tracking-wider bg-secondary px-3 py-1 rounded-full font-heading font-bold">{a.status.replace(/_/g, " ")}</span>
                 </div>
+
+                {/* Order items */}
+                {a.orders?.order_items?.map((item: any) => (
+                  <p key={item.id} className="text-sm text-muted-foreground">{item.quantity}x {item.item_name} — ₹{item.total_price}</p>
+                ))}
+
+                {/* Delivery Address with Google Maps Link */}
                 {a.orders?.delivery_address && (
-                  <p className="text-sm text-muted-foreground flex items-center gap-1 mb-2">
-                    <Navigation className="w-3 h-3" /> {a.orders.delivery_address}
-                  </p>
+                  <div className="mt-3 p-3 bg-secondary/50 rounded-xl space-y-2">
+                    <p className="text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-primary" /> DELIVERY ADDRESS
+                    </p>
+                    <p className="text-sm text-foreground">{a.orders.delivery_address}</p>
+                    <a
+                      href={getGoogleMapsLink(a.orders.delivery_address)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-xs font-heading font-bold uppercase tracking-wider hover:bg-primary/90 transition-colors"
+                    >
+                      <Navigation className="w-4 h-4" /> NAVIGATE IN GOOGLE MAPS
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 )}
-                <p className="font-heading font-bold text-primary">₹{a.orders?.total_amount}</p>
-                
-                <div className="flex gap-2 mt-3">
-                  {a.status === "assigned" && (
-                    <Button size="sm" onClick={() => updateAssignment(a.id, "picked_up")} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider flex-1">
-                      PICKED UP
-                    </Button>
-                  )}
-                  {a.status === "picked_up" && (
-                    <Button size="sm" onClick={() => updateAssignment(a.id, "delivered")} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider flex-1">
-                      <CheckCircle className="w-4 h-4 mr-1" /> DELIVERED
-                    </Button>
-                  )}
+
+                {/* Delivery notes */}
+                {a.orders?.delivery_notes && (
+                  <div className="mt-2 p-2 bg-yellow-50 rounded-lg">
+                    <p className="text-xs text-yellow-800">📝 {a.orders.delivery_notes}</p>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center mt-3 pt-3 border-t border-border">
+                  <div>
+                    <p className="font-heading font-bold text-primary">₹{a.orders?.total_amount}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                      {a.orders?.payment_method === "cod" ? "💵 CASH ON DELIVERY" : "✅ PAID ONLINE"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {a.status === "assigned" && (
+                      <Button size="sm" onClick={() => updateAssignment(a.id, "picked_up")} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
+                        PICKED UP
+                      </Button>
+                    )}
+                    {a.status === "picked_up" && (
+                      <Button size="sm" onClick={() => updateAssignment(a.id, "delivered")} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
+                        <CheckCircle className="w-4 h-4 mr-1" /> DELIVERED
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
