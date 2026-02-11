@@ -112,46 +112,48 @@ const CustomerMenu = () => {
 
       <CategoryBar selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
 
-      {/* Tobacco banner */}
-      {!tobaccoVerified && (
+      {/* Tobacco banner - only when Pan Masala category is selected */}
+      {selectedCategory === "Pan Masala" && (
         <TobaccoBanner onConfirmed={() => setTobaccoVerified(true)} />
       )}
 
-      {/* Food grid */}
-      <section className="px-4 pb-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-heading text-xl font-bold uppercase tracking-wide text-foreground">
-              {selectedCategory || "ALL ITEMS"} ({filtered.length})
-            </h2>
-          </div>
+      {/* Food grid - hide when Pan Masala selected and not verified */}
+      {selectedCategory !== "Pan Masala" && (
+        <section className="px-4 pb-24">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading text-xl font-bold uppercase tracking-wide text-foreground">
+                {selectedCategory || "ALL ITEMS"} ({filtered.length})
+              </h2>
+            </div>
 
-          {filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground uppercase tracking-wider">NO ITEMS FOUND</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {filtered.map((item) => (
-                <FoodCard
-                  key={item.id}
-                  id={item.id}
-                  name={item.name}
-                  description={item.description}
-                  price={item.price}
-                  image_url={item.image_url}
-                  is_veg={item.is_veg}
-                  preparation_time_mins={item.preparation_time_mins}
-                  is_available={item.is_available}
-                  quantity={cart[item.id] || 0}
-                  onAdd={addToCart}
-                  onRemove={removeFromCart}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+            {filtered.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground uppercase tracking-wider">NO ITEMS FOUND</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {filtered.map((item) => (
+                  <FoodCard
+                    key={item.id}
+                    id={item.id}
+                    name={item.name}
+                    description={item.description}
+                    price={item.price}
+                    image_url={item.image_url}
+                    is_veg={item.is_veg}
+                    preparation_time_mins={item.preparation_time_mins}
+                    is_available={item.is_available}
+                    quantity={cart[item.id] || 0}
+                    onAdd={addToCart}
+                    onRemove={removeFromCart}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Floating cart bar */}
       {cartCount > 0 && (
