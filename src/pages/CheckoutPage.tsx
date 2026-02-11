@@ -16,6 +16,7 @@ import {
   Wallet, Shield, Zap, Headphones, ChevronDown, ChevronUp, Navigation,
   Edit3, Phone, User, FileText, Sparkles,
 } from "lucide-react";
+import emailjs from "@emailjs/browser";
 
 interface SavedAddress {
   id: string;
@@ -48,7 +49,7 @@ const CheckoutPage = () => {
   // Delivery time
   const [deliveryOption, setDeliveryOption] = useState<"asap" | "scheduled">("asap");
   const [scheduledTime, setScheduledTime] = useState("");
-  const prepTime = 20; // default merchant prep time
+  const prepTime = 20;
 
   // Coupon
   const [couponCode, setCouponCode] = useState("");
@@ -68,8 +69,8 @@ const CheckoutPage = () => {
   // Placing
   const [placing, setPlacing] = useState(false);
 
-  const deliveryFee = 30;
-  const finalTotal = total + deliveryFee;
+  // No delivery fee
+  const finalTotal = total;
 
   useEffect(() => {
     if (!user) return;
@@ -201,7 +202,6 @@ const CheckoutPage = () => {
         throw new Error(fnError?.message || sessionData?.error || 'Failed to create payment session');
       }
 
-      // Use the npm SDK
       const { load } = await import("@cashfreepayments/cashfree-js");
       const cashfree = await load({ mode: "production" });
 
@@ -229,6 +229,22 @@ const CheckoutPage = () => {
     }
   };
 
+  const sendOrderEmail = async (orderNumber: string, itemsList: { name: string; quantity: number; price: number }[], totalAmount: number) => {
+    try {
+      const itemsHtml = itemsList.map(i => `${i.name} x${i.quantity} — ₹${i.price * i.quantity}`).join("\n");
+      await emailjs.send("service_iyz5u2i", "template_order_confirm", {
+        to_email: profile?.email || user?.email || "",
+        to_name: contactName || profile?.full_name || "Customer",
+        order_id: orderNumber,
+        order_items: itemsHtml,
+        total_amount: `₹${totalAmount.toFixed(0)}`,
+        message: `Thank you for ordering from CAFÉ12AM! Your order #${orderNumber} has been placed successfully. We'll deliver it to you soon! 🎉`,
+      }, "YOUR_PUBLIC_KEY");
+    } catch (err) {
+      console.log("Email sending skipped or failed:", err);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!user || !profile) {
       toast({ title: "Please log in first", variant: "destructive" });
@@ -244,13 +260,30 @@ const CheckoutPage = () => {
     setPlacing(true);
     try {
       const orderNumber = `C12AM-${Date.now().toString(36).toUpperCase()}`;
-      const { data: merchantSettings } = await supabase
-        .from("merchant_settings")
-        .select("merchant_id")
-        .limit(1)
-        .maybeSingle();
+      
+      // Get merchant_id from the first cart item's menu_item
+      let merchantId: string | null = null;
+      const realItemIds = cartItems.filter(i => !i.id.startsWith("d")).map(i => i.id);
+      
+      if (realItemIds.length > 0) {
+        const { data: menuItem } = await supabase
+          .from("menu_items")
+          .select("merchant_id")
+          .eq("id", realItemIds[0])
+          .maybeSingle();
+        merchantId = menuItem?.merchant_id || null;
+      }
+      
+      // Fallback to first merchant
+      if (!merchantId) {
+        const { data: merchantSettings } = await supabase
+          .from("merchant_settings")
+          .select("merchant_id")
+          .limit(1)
+          .maybeSingle();
+        merchantId = merchantSettings?.merchant_id || null;
+      }
 
-      const merchantId = merchantSettings?.merchant_id;
       if (!merchantId) {
         toast({ title: "No merchant available", description: "Please try again later", variant: "destructive" });
         setPlacing(false);
@@ -266,7 +299,7 @@ const CheckoutPage = () => {
         delivery_address: selectedAddress.address,
         delivery_notes: deliveryInstructions || orderNotes || null,
         subtotal,
-        delivery_fee: deliveryFee,
+        delivery_fee: 0,
         discount,
         total_amount: finalTotal,
         payment_method: paymentMethod,
@@ -298,6 +331,9 @@ const CheckoutPage = () => {
           return;
         }
       }
+
+      // Send order confirmation email
+      sendOrderEmail(orderNumber, cartItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })), finalTotal);
 
       toast({ title: "Order placed!", description: `Order #${orderNumber}` });
       clearCart();
@@ -365,7 +401,6 @@ const CheckoutPage = () => {
           </button>
           {expandedSection === "address" && (
             <div className="px-4 pb-4 space-y-3">
-              {/* Contact info */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-1"><User className="w-3 h-3" /> Name</Label>
@@ -377,7 +412,6 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* Saved addresses */}
               {savedAddresses.length > 0 && (
                 <div className="space-y-2">
                   {savedAddresses.map((addr) => (
@@ -397,7 +431,6 @@ const CheckoutPage = () => {
                 </div>
               )}
 
-              {/* Add new address */}
               {!showAddressForm ? (
                 <Button variant="outline" onClick={() => setShowAddressForm(true)} className="w-full rounded-xl text-xs uppercase tracking-wider font-heading font-bold">
                   <Plus className="w-3 h-3 mr-1" /> ADD NEW ADDRESS
@@ -441,7 +474,6 @@ const CheckoutPage = () => {
                 </div>
               )}
 
-              {/* Delivery instructions */}
               <div>
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-1"><FileText className="w-3 h-3" /> Delivery Instructions (optional)</Label>
                 <Input
@@ -592,7 +624,7 @@ const CheckoutPage = () => {
           )}
         </div>
 
-        {/* SECTION 5 — Payment Method */}
+        {/* SECTION 5 — Payment Method (Big Square Cards) */}
         <div className="bg-card rounded-2xl shadow-card overflow-hidden">
           <button onClick={() => toggleSection("payment")} className="w-full flex items-center justify-between p-4">
             <h2 className="font-heading font-bold text-sm uppercase tracking-wider flex items-center gap-2">
@@ -602,23 +634,30 @@ const CheckoutPage = () => {
           </button>
           {expandedSection === "payment" && (
             <div className="px-4 pb-4">
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: "upi", label: "UPI", desc: "Google Pay, PhonePe, Paytm", icon: <Wallet className="w-4 h-4" /> },
-                  { value: "card", label: "CARD", desc: "Credit / Debit Card", icon: <CreditCard className="w-4 h-4" /> },
-                  { value: "wallet", label: "WALLET", desc: "Paytm, Mobikwik, etc.", icon: <Wallet className="w-4 h-4" /> },
-                  { value: "cod", label: "CASH ON DELIVERY", desc: "Pay when delivered", icon: <Banknote className="w-4 h-4" /> },
+                  { value: "upi", label: "UPI", desc: "Google Pay, PhonePe, Paytm", icon: <Wallet className="w-8 h-8" /> },
+                  { value: "card", label: "CARD", desc: "Credit / Debit Card", icon: <CreditCard className="w-8 h-8" /> },
+                  { value: "wallet", label: "WALLET", desc: "Paytm, Mobikwik", icon: <Wallet className="w-8 h-8" /> },
+                  { value: "cod", label: "CASH ON DELIVERY", desc: "Pay when delivered", icon: <Banknote className="w-8 h-8" /> },
                 ].map((opt) => (
-                  <div key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border-2 border-border has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                    <RadioGroupItem value={opt.value} id={opt.value} />
-                    <Label htmlFor={opt.value} className="flex-1 cursor-pointer">
-                      <p className="font-heading font-bold text-xs uppercase tracking-wider">{opt.label}</p>
-                      <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
-                    </Label>
-                    <span className="text-muted-foreground">{opt.icon}</span>
-                  </div>
+                  <button
+                    key={opt.value}
+                    onClick={() => setPaymentMethod(opt.value)}
+                    className={`flex flex-col items-center justify-center gap-2 p-6 rounded-2xl border-2 transition-all text-center ${
+                      paymentMethod === opt.value
+                        ? "border-primary bg-primary/10 shadow-soft"
+                        : "border-border hover:border-primary/30 bg-card"
+                    }`}
+                  >
+                    <span className={paymentMethod === opt.value ? "text-primary" : "text-muted-foreground"}>
+                      {opt.icon}
+                    </span>
+                    <p className="font-heading font-bold text-xs uppercase tracking-wider">{opt.label}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</p>
+                  </button>
                 ))}
-              </RadioGroup>
+              </div>
               <div className="flex items-center gap-2 mt-3 bg-primary/5 rounded-xl p-2">
                 <Shield className="w-3 h-3 text-primary" />
                 <p className="text-[10px] text-muted-foreground">100% Secure Payments</p>
@@ -645,7 +684,7 @@ const CheckoutPage = () => {
           />
         </div>
 
-        {/* Bill Summary */}
+        {/* Bill Summary — No delivery fee */}
         <div className="bg-card rounded-2xl shadow-card p-4">
           <h3 className="font-heading font-bold text-sm uppercase tracking-wider mb-3">BILL DETAILS</h3>
           <div className="space-y-2 text-sm">
@@ -661,7 +700,7 @@ const CheckoutPage = () => {
             )}
             <div className="flex justify-between">
               <span className="text-muted-foreground text-xs uppercase tracking-wide">Delivery Fee</span>
-              <span className="font-heading font-bold">₹{deliveryFee}</span>
+              <span className="font-heading font-bold text-green-600">FREE</span>
             </div>
             <div className="border-t border-border pt-2 flex justify-between">
               <span className="font-heading font-bold uppercase tracking-wider">TOTAL</span>

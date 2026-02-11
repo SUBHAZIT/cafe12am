@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Store, Truck, BarChart3, Tag, LogOut, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, User, Phone, Mail, MapPin, Building, CreditCard, Clock, Package } from "lucide-react";
+import { Users, Store, Truck, BarChart3, Tag, LogOut, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, User, Phone, Mail, MapPin, Building, CreditCard, Clock, Package, IndianRupee } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
-type Tab = "overview" | "merchants" | "riders" | "customers" | "orders" | "coupons";
+type Tab = "overview" | "merchants" | "riders" | "customers" | "orders" | "coupons" | "rider_earnings";
+
+const EARNING_PER_DELIVERY = 20;
 
 const AdminPanel = () => {
   const { signOut } = useAuth();
@@ -17,6 +19,7 @@ const AdminPanel = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
+  const [deliveryAssignments, setDeliveryAssignments] = useState<any[]>([]);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [showCreateMerchant, setShowCreateMerchant] = useState(false);
@@ -43,6 +46,7 @@ const AdminPanel = () => {
       setCustomers(data.customers || []);
       setOrders(data.orders || []);
       setCoupons(data.coupons || []);
+      setDeliveryAssignments(data.delivery_assignments || []);
     }
     setDataLoading(false);
   };
@@ -137,12 +141,31 @@ const AdminPanel = () => {
     { id: "overview" as Tab, label: "OVERVIEW", icon: BarChart3 },
     { id: "merchants" as Tab, label: "MERCHANTS", icon: Store },
     { id: "riders" as Tab, label: "RIDERS", icon: Truck },
+    { id: "rider_earnings" as Tab, label: "EARNINGS", icon: IndianRupee },
     { id: "customers" as Tab, label: "CUSTOMERS", icon: Users },
     { id: "orders" as Tab, label: "ORDERS", icon: Package },
     { id: "coupons" as Tab, label: "COUPONS", icon: Tag },
   ];
 
   const totalRevenue = orders.reduce((a: number, o: any) => a + Number(o.total_amount || 0), 0);
+
+  // Rider earnings helpers
+  const getRiderEarnings = (riderId: string) => {
+    const riderAssignments = deliveryAssignments.filter((a: any) => a.delivery_partner_id === riderId && a.status === "delivered");
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const weekStart = todayStart - (now.getDay() * 86400000);
+    const todayDelivered = riderAssignments.filter((a: any) => new Date(a.delivered_at || a.created_at).getTime() >= todayStart);
+    const weekDelivered = riderAssignments.filter((a: any) => new Date(a.delivered_at || a.created_at).getTime() >= weekStart);
+    return {
+      total: riderAssignments.length * EARNING_PER_DELIVERY,
+      totalDeliveries: riderAssignments.length,
+      today: todayDelivered.length * EARNING_PER_DELIVERY,
+      todayDeliveries: todayDelivered.length,
+      week: weekDelivered.length * EARNING_PER_DELIVERY,
+      weekDeliveries: weekDelivered.length,
+    };
+  };
 
   const DetailRow = ({ icon: Icon, label, value }: { icon: any; label: string; value: string | null | undefined }) => {
     if (!value) return null;
@@ -188,7 +211,6 @@ const AdminPanel = () => {
 
         {isExpanded && (
           <div className="px-4 pb-4 space-y-4 border-t border-border pt-3">
-            {/* Personal Info */}
             <div>
               <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">PERSONAL INFO</p>
               <div className="space-y-1.5">
@@ -200,7 +222,6 @@ const AdminPanel = () => {
               </div>
             </div>
 
-            {/* Merchant Settings */}
             {type === "merchant" && user.merchant_settings && (
               <div>
                 <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">STORE SETTINGS</p>
@@ -218,7 +239,6 @@ const AdminPanel = () => {
               </div>
             )}
 
-            {/* Delivery Settings */}
             {type === "rider" && user.delivery_settings && (
               <div>
                 <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">DELIVERY SETTINGS</p>
@@ -235,7 +255,6 @@ const AdminPanel = () => {
               </div>
             )}
 
-            {/* Saved Addresses */}
             {user.saved_addresses && user.saved_addresses.length > 0 && (
               <div>
                 <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">SAVED ADDRESSES</p>
@@ -251,7 +270,6 @@ const AdminPanel = () => {
               </div>
             )}
 
-            {/* Bank Details */}
             {user.bank_details && user.bank_details.length > 0 && (
               <div>
                 <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-2">BANK DETAILS</p>
@@ -370,6 +388,74 @@ const AdminPanel = () => {
           </div>
         )}
 
+        {/* Rider Earnings Tab */}
+        {tab === "rider_earnings" && (
+          <div>
+            <h2 className="font-heading text-xl font-bold uppercase tracking-tight mb-6">RIDER EARNINGS</h2>
+            {riders.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8 uppercase tracking-wider text-sm">NO RIDERS YET</p>
+            ) : (
+              <div className="space-y-4">
+                {/* Total summary */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-card rounded-2xl p-5 shadow-card">
+                    <IndianRupee className="w-5 h-5 text-primary mb-2" />
+                    <p className="font-heading text-2xl font-bold text-primary">
+                      ₹{deliveryAssignments.filter((a: any) => a.status === "delivered").length * EARNING_PER_DELIVERY}
+                    </p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">TOTAL RIDER EARNINGS</p>
+                  </div>
+                  <div className="bg-card rounded-2xl p-5 shadow-card">
+                    <Truck className="w-5 h-5 text-foreground mb-2" />
+                    <p className="font-heading text-2xl font-bold text-foreground">
+                      {deliveryAssignments.filter((a: any) => a.status === "delivered").length}
+                    </p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">TOTAL DELIVERIES</p>
+                  </div>
+                </div>
+                <div className="bg-primary/10 rounded-2xl p-4 flex items-center gap-3">
+                  <IndianRupee className="w-8 h-8 text-primary" />
+                  <div>
+                    <p className="font-heading font-bold text-sm uppercase tracking-wider">₹{EARNING_PER_DELIVERY} PER DELIVERY</p>
+                    <p className="text-xs text-muted-foreground">Each rider earns ₹{EARNING_PER_DELIVERY} per completed delivery</p>
+                  </div>
+                </div>
+                {/* Per-rider breakdown */}
+                {riders.map((rider: any) => {
+                  const earnings = getRiderEarnings(rider.id);
+                  return (
+                    <div key={rider.id} className="bg-card rounded-2xl shadow-card p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-heading font-bold text-sm uppercase tracking-wide">{rider.full_name || "N/A"}</p>
+                          <p className="text-xs text-muted-foreground">{rider.phone || rider.email}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="bg-secondary/50 rounded-xl p-3 text-center">
+                          <p className="font-heading font-bold text-primary text-lg">₹{earnings.today}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">TODAY ({earnings.todayDeliveries})</p>
+                        </div>
+                        <div className="bg-secondary/50 rounded-xl p-3 text-center">
+                          <p className="font-heading font-bold text-foreground text-lg">₹{earnings.week}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">WEEK ({earnings.weekDeliveries})</p>
+                        </div>
+                        <div className="bg-secondary/50 rounded-xl p-3 text-center">
+                          <p className="font-heading font-bold text-green-600 text-lg">₹{earnings.total}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">TOTAL ({earnings.totalDeliveries})</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Merchants */}
         {tab === "merchants" && (
           <div>
@@ -472,7 +558,6 @@ const AdminPanel = () => {
                         <DetailRow icon={CreditCard} label="Payment" value={`${o.payment_method} (${o.payment_status})`} />
                         <div className="flex gap-4 text-xs text-muted-foreground">
                           <span>Subtotal: ₹{o.subtotal}</span>
-                          <span>Delivery: ₹{o.delivery_fee}</span>
                           {Number(o.discount) > 0 && <span>Discount: -₹{o.discount}</span>}
                         </div>
                         {o.order_items && o.order_items.length > 0 && (
