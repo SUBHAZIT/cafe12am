@@ -199,13 +199,19 @@ const CheckoutPage = () => {
     setPlacing(true);
     try {
       const orderNumber = `C12AM-${Date.now().toString(36).toUpperCase()}`;
-      const { data: merchants } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", (await supabase.from("user_roles").select("user_id").eq("role", "merchant").limit(1)).data?.[0]?.user_id || "")
+      // Get merchant settings to find the merchant profile id
+      const { data: merchantSettings } = await supabase
+        .from("merchant_settings")
+        .select("merchant_id")
+        .limit(1)
         .maybeSingle();
 
-      const merchantId = merchants?.id || profile.id;
+      const merchantId = merchantSettings?.merchant_id;
+      if (!merchantId) {
+        toast({ title: "No merchant available", description: "Please try again later", variant: "destructive" });
+        setPlacing(false);
+        return;
+      }
 
       const { data: order, error: orderError } = await supabase.from("orders").insert({
         customer_id: profile.id,
