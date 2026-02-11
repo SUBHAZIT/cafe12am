@@ -36,7 +36,7 @@ const CustomerMenu = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<Record<string, number>>({});
-  const [showClosedBanner, setShowClosedBanner] = useState(!isOpen);
+  const [showClosedBanner, setShowClosedBanner] = useState(true);
   const [showCheckoutBlock, setShowCheckoutBlock] = useState(false);
   const [dbItems, setDbItems] = useState<any[]>([]);
 
@@ -80,7 +80,7 @@ const CustomerMenu = () => {
         <ClosedPopup onDismiss={() => setShowClosedBanner(false)} />
       )}
       {showCheckoutBlock && !isOpen && (
-        <ClosedPopup blockCheckout />
+        <ClosedPopup blockCheckout onDismiss={() => setShowCheckoutBlock(false)} />
       )}
       <CustomerNav cartCount={cartCount} />
 
