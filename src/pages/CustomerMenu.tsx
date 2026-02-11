@@ -6,7 +6,8 @@ import CategoryBar from "@/components/customer/CategoryBar";
 import FoodCard from "@/components/customer/FoodCard";
 import ClosedPopup from "@/components/customer/ClosedPopup";
 import { useOperatingHours } from "@/hooks/useOperatingHours";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Sparkles, Cigarette } from "lucide-react";
+import TobaccoBanner from "@/components/customer/TobaccoBanner";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import foodBurger from "@/assets/food-burger.png";
@@ -38,6 +39,7 @@ const CustomerMenu = () => {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [showClosedBanner, setShowClosedBanner] = useState(true);
   const [showCheckoutBlock, setShowCheckoutBlock] = useState(false);
+  const [tobaccoVerified, setTobaccoVerified] = useState(false);
   const [dbItems, setDbItems] = useState<any[]>([]);
 
   useEffect(() => {
@@ -109,6 +111,11 @@ const CustomerMenu = () => {
       </div>
 
       <CategoryBar selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
+
+      {/* Tobacco banner */}
+      {!tobaccoVerified && (
+        <TobaccoBanner onConfirmed={() => setTobaccoVerified(true)} />
+      )}
 
       {/* Food grid */}
       <section className="px-4 pb-24">
