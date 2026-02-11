@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.admin-fetch-users]
 verify_jwt = false
+
+[functions.cashfree-create-order]
+verify_jwt = false

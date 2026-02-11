@@ -184,6 +184,60 @@ const CheckoutPage = () => {
     setApplying(false);
   };
 
+  const initiateCashfreePayment = async (orderId: string, orderNumber: string, amount: number) => {
+    try {
+      const { data: sessionData, error: fnError } = await supabase.functions.invoke('cashfree-create-order', {
+        body: {
+          order_id: orderNumber,
+          order_amount: amount.toFixed(2),
+          customer_name: contactName || profile?.full_name || 'Customer',
+          customer_email: profile?.email || 'customer@cafe12am.com',
+          customer_phone: contactPhone || profile?.phone || '9999999999',
+          return_url: `${window.location.origin}/order/orders`,
+        },
+      });
+
+      if (fnError || !sessionData?.payment_session_id) {
+        throw new Error(fnError?.message || sessionData?.error || 'Failed to create payment session');
+      }
+
+      // Load Cashfree JS SDK and open payment
+      const cashfree = (window as any).Cashfree;
+      if (!cashfree) {
+        toast({ title: "Payment SDK loading...", description: "Please wait and try again" });
+        return false;
+      }
+
+      const cfInstance = cashfree({
+        mode: "sandbox", // Change to "production" for live
+      });
+
+      const result = await cfInstance.checkout({
+        paymentSessionId: sessionData.payment_session_id,
+        redirectTarget: "_modal",
+      });
+
+      if (result.error) {
+        toast({ title: "Payment failed", description: result.error.message, variant: "destructive" });
+        // Update order payment status to failed
+        await supabase.from("orders").update({ payment_status: "failed" }).eq("id", orderId);
+        return false;
+      }
+
+      if (result.paymentDetails) {
+        // Payment successful
+        await supabase.from("orders").update({ payment_status: "paid" }).eq("id", orderId);
+        return true;
+      }
+
+      return false;
+    } catch (err: any) {
+      console.error("Cashfree payment error:", err);
+      toast({ title: "Payment error", description: err.message, variant: "destructive" });
+      return false;
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!user || !profile) {
       toast({ title: "Please log in first", variant: "destructive" });
@@ -199,7 +253,6 @@ const CheckoutPage = () => {
     setPlacing(true);
     try {
       const orderNumber = `C12AM-${Date.now().toString(36).toUpperCase()}`;
-      // Get merchant settings to find the merchant profile id
       const { data: merchantSettings } = await supabase
         .from("merchant_settings")
         .select("merchant_id")
@@ -212,6 +265,8 @@ const CheckoutPage = () => {
         setPlacing(false);
         return;
       }
+
+      const isOnlinePayment = paymentMethod !== "cod";
 
       const { data: order, error: orderError } = await supabase.from("orders").insert({
         customer_id: profile.id,
@@ -226,7 +281,7 @@ const CheckoutPage = () => {
         payment_method: paymentMethod,
         coupon_id: appliedCoupon?.id || null,
         status: "pending",
-        payment_status: paymentMethod === "cod" ? "pending" : "paid",
+        payment_status: isOnlinePayment ? "awaiting" : "pending",
       }).select().single();
 
       if (orderError) throw orderError;
@@ -242,7 +297,18 @@ const CheckoutPage = () => {
 
       await supabase.from("order_items").insert(orderItems);
 
-      toast({ title: "Order placed! 🎉", description: `Order #${orderNumber}` });
+      // If online payment, initiate Cashfree
+      if (isOnlinePayment) {
+        const paymentSuccess = await initiateCashfreePayment(order.id, orderNumber, finalTotal);
+        if (!paymentSuccess) {
+          toast({ title: "Payment incomplete", description: "Your order has been saved. Complete payment to confirm.", variant: "destructive" });
+          setPlacing(false);
+          navigate("/order/orders");
+          return;
+        }
+      }
+
+      toast({ title: "Order placed!", description: `Order #${orderNumber}` });
       clearCart();
       navigate("/order/orders");
     } catch (err: any) {
