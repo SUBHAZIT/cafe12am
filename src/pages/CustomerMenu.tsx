@@ -107,9 +107,6 @@ const CustomerMenu = () => {
 
       <CategoryBar selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
 
-      {/* Coupon offers */}
-      {selectedCategory !== "Paan Corner" && <CouponBanner />}
-
       {/* Paan Corner: banner then items after verification */}
       {selectedCategory === "Paan Corner" && !tobaccoVerified && (
         <TobaccoBanner onConfirmed={() => setTobaccoVerified(true)} />
@@ -153,11 +150,21 @@ const CustomerMenu = () => {
                 <p className="text-muted-foreground uppercase tracking-wider">NO ITEMS FOUND</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                {filtered.map((item) => (
-                  <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} onAdd={handleAdd} onRemove={handleRemove} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                  {filtered.slice(0, 4).map((item) => (
+                    <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} onAdd={handleAdd} onRemove={handleRemove} />
+                  ))}
+                </div>
+                <CouponBanner />
+                {filtered.length > 4 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    {filtered.slice(4).map((item) => (
+                      <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} onAdd={handleAdd} onRemove={handleRemove} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
