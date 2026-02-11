@@ -29,11 +29,20 @@ const DeliveryPartnerApp = () => {
     if (!profile) return;
     fetchAll();
 
+    // Realtime subscription
     const channel = supabase
       .channel("rider-assignments")
       .on("postgres_changes", { event: "*", schema: "public", table: "delivery_assignments", filter: `delivery_partner_id=eq.${profile.id}` }, () => fetchAssignments())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => fetchAssignments())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Polling fallback every 10s to ensure rider always sees new orders
+    const pollInterval = setInterval(() => fetchAssignments(), 10000);
+
+    return () => { 
+      supabase.removeChannel(channel); 
+      clearInterval(pollInterval);
+    };
   }, [profile]);
 
   // Alert sound for new incoming orders
