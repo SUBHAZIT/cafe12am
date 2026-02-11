@@ -203,7 +203,7 @@ const CheckoutPage = () => {
 
       // Use the npm SDK
       const { load } = await import("@cashfreepayments/cashfree-js");
-      const cashfree = await load({ mode: "sandbox" }); // Change to "production" for live
+      const cashfree = await load({ mode: "production" });
 
       const result = await cashfree.checkout({
         paymentSessionId: sessionData.payment_session_id,
