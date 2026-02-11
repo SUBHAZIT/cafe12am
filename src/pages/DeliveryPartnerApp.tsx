@@ -150,23 +150,31 @@ const DeliveryPartnerApp = () => {
   };
 
   const pickupOrder = async (id: string) => {
+    // Generate a 4-digit OTP
+    const otp = String(Math.floor(1000 + Math.random() * 9000));
     await supabase.from("delivery_assignments").update({ status: "picked_up", picked_up_at: new Date().toISOString() }).eq("id", id);
     const assignment = assignments.find(a => a.id === id);
     if (assignment) {
-      await supabase.from("orders").update({ status: "out_for_delivery" }).eq("id", assignment.order_id);
+      await supabase.from("orders").update({ status: "out_for_delivery", delivery_otp: otp }).eq("id", assignment.order_id);
     }
     fetchAssignments();
-    toast({ title: "Picked up! Navigate to customer." });
+    toast({ title: "Picked up! OTP has been sent to customer." });
   };
 
-  const deliverOrder = async (id: string) => {
-    await supabase.from("delivery_assignments").update({ status: "delivered", delivered_at: new Date().toISOString() }).eq("id", id);
+  const deliverOrder = async (id: string, enteredOtp: string) => {
     const assignment = assignments.find(a => a.id === id);
     if (assignment) {
+      // Verify OTP
+      const { data: order } = await supabase.from("orders").select("delivery_otp").eq("id", assignment.order_id).maybeSingle();
+      if (order?.delivery_otp && order.delivery_otp !== enteredOtp) {
+        toast({ title: "Invalid OTP! Please check with customer.", variant: "destructive" });
+        return;
+      }
+      await supabase.from("delivery_assignments").update({ status: "delivered", delivered_at: new Date().toISOString() }).eq("id", id);
       await supabase.from("orders").update({ status: "delivered" }).eq("id", assignment.order_id);
     }
     fetchAssignments();
-    toast({ title: "Delivery completed! Rs." + EARNING_PER_DELIVERY + " earned." });
+    toast({ title: "Delivery completed! ₹" + EARNING_PER_DELIVERY + " earned." });
   };
 
   const saveBankDetails = async () => {

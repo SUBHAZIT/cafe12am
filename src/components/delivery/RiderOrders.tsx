@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Package, Navigation, MapPin, ExternalLink, Phone, Clock, CheckCircle,
-  Truck, XCircle, Timer, ChefHat, User, IndianRupee, AlertCircle
+  Truck, XCircle, Timer, ChefHat, User, IndianRupee, AlertCircle, KeyRound
 } from "lucide-react";
 
 interface RiderOrdersProps {
@@ -10,7 +11,7 @@ interface RiderOrdersProps {
   onAccept: (id: string) => void;
   onDecline: (id: string) => void;
   onPickup: (id: string) => void;
-  onDeliver: (id: string) => void;
+  onDeliver: (id: string, otp: string) => void;
 }
 
 const getGoogleMapsLink = (address: string) =>
@@ -221,8 +222,9 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
   assignment: any;
   stage: "pickup" | "deliver";
   onPickup?: (id: string) => void;
-  onDeliver?: (id: string) => void;
+  onDeliver?: (id: string, otp: string) => void;
 }) => {
+  const [otpInput, setOtpInput] = useState("");
   const customer = a.orders?.customer;
   const merchant = a.orders?.merchant;
   const targetAddress = stage === "pickup" ? (merchant?.address || "Merchant location") : a.orders?.delivery_address;
@@ -309,22 +311,44 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
       )}
 
       {/* Action Button */}
-      <div className="flex justify-end">
+      <div>
         {stage === "pickup" && onPickup && (
           <Button
             onClick={() => onPickup(a.id)}
-            className="rounded-full font-heading font-bold text-xs uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full rounded-full font-heading font-bold text-xs uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Package className="w-4 h-4 mr-1" /> PICKED UP
           </Button>
         )}
         {stage === "deliver" && onDeliver && (
-          <Button
-            onClick={() => onDeliver(a.id)}
-            className="rounded-full font-heading font-bold text-xs uppercase tracking-wider bg-green-600 hover:bg-green-700 text-white"
-          >
-            <CheckCircle className="w-4 h-4 mr-1" /> DELIVERED
-          </Button>
+          <div className="space-y-3">
+            <div className="bg-primary/5 border-2 border-dashed border-primary/30 rounded-xl p-4">
+              <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary flex items-center gap-1 mb-2">
+                <KeyRound className="w-3.5 h-3.5" /> ENTER DELIVERY OTP
+              </p>
+              <p className="text-[10px] text-muted-foreground mb-3">Ask the customer for the 4-digit OTP shown in their app</p>
+              <Input
+                value={otpInput}
+                onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                placeholder="Enter 4-digit OTP"
+                className="text-center text-2xl font-heading font-bold tracking-[0.3em] h-14 rounded-xl bg-card border-2 border-primary/20 focus:border-primary"
+                maxLength={4}
+                inputMode="numeric"
+              />
+            </div>
+            <Button
+              onClick={() => {
+                if (otpInput.length !== 4) {
+                  return;
+                }
+                onDeliver(a.id, otpInput);
+              }}
+              disabled={otpInput.length !== 4}
+              className="w-full rounded-full font-heading font-bold text-xs uppercase tracking-wider bg-green-600 hover:bg-green-700 text-white h-12"
+            >
+              <CheckCircle className="w-4 h-4 mr-1" /> VERIFY & MARK DELIVERED
+            </Button>
+          </div>
         )}
       </div>
     </div>
