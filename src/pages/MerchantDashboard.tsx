@@ -124,25 +124,27 @@ const MerchantDashboard = () => {
   };
 
   const markReady = async (orderId: string) => {
-    await supabase.from("orders").update({ status: "ready_for_pickup" }).eq("id", orderId);
-    
-    // Auto-assign to an online delivery partner
-    const { data: onlinePartners } = await supabase
-      .from("delivery_partner_settings")
-      .select("partner_id")
-      .eq("is_online", true)
-      .limit(1);
-    
-    if (onlinePartners && onlinePartners.length > 0) {
-      await supabase.from("delivery_assignments").insert([{
-        order_id: orderId,
-        delivery_partner_id: onlinePartners[0].partner_id,
-        status: "assigned"
-      }]);
-      toast({ title: "Order ready! Rider assigned." });
-    } else {
-      toast({ title: "Order ready! No online riders found.", variant: "destructive" });
+    // Update order status - the database trigger will auto-assign a rider
+    const { error } = await supabase.from("orders").update({ status: "ready_for_pickup" }).eq("id", orderId);
+    if (error) {
+      toast({ title: "Failed to update order", variant: "destructive" });
+      return;
     }
+    
+    // Check if a rider was assigned by the trigger
+    setTimeout(async () => {
+      const { data: assignment } = await supabase
+        .from("delivery_assignments")
+        .select("id")
+        .eq("order_id", orderId)
+        .maybeSingle();
+      
+      if (assignment) {
+        toast({ title: "Order ready! Rider assigned automatically." });
+      } else {
+        toast({ title: "Order ready! No online riders found - will auto-assign when a rider comes online.", variant: "destructive" });
+      }
+    }, 1000);
     
     fetchOrders();
   };
