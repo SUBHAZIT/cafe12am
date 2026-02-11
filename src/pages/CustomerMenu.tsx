@@ -10,6 +10,7 @@ import { useOperatingHours } from "@/hooks/useOperatingHours";
 import { Search, Sparkles } from "lucide-react";
 import TobaccoBanner from "@/components/customer/TobaccoBanner";
 import CouponBanner from "@/components/customer/CouponBanner";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import foodBurger from "@/assets/food-burger.png";
 import foodMaggi from "@/assets/food-maggi.png";
@@ -179,10 +180,10 @@ const CustomerMenu = () => {
               <span className="font-heading font-bold uppercase tracking-wider text-sm">VIEW CART →</span>
             </button>
           ) : (
-            <a href="/order/cart" className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow">
+            <Link to="/order/cart" className="max-w-lg mx-auto flex items-center justify-between bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow">
               <p className="font-heading font-bold text-sm uppercase tracking-wider">{cartCount} ITEMS IN CART</p>
               <span className="font-heading font-bold uppercase tracking-wider text-sm">VIEW CART →</span>
-            </a>
+            </Link>
           )}
         </div>
       )}
