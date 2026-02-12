@@ -24,6 +24,12 @@ interface SavedAddress {
   label: string;
   address: string;
   is_default: boolean;
+  building_name?: string | null;
+  room_number?: string | null;
+  landmark?: string | null;
+  delivery_instructions?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 const CheckoutPage = () => {
@@ -107,6 +113,16 @@ const CheckoutPage = () => {
   }, [user, profile]);
 
   const selectedAddress = savedAddresses.find((a) => a.id === selectedAddressId);
+
+  // Auto-fill address details when selecting a saved address
+  useEffect(() => {
+    if (selectedAddress) {
+      setBuildingName(selectedAddress.building_name || "");
+      setRoomNumber(selectedAddress.room_number || "");
+      setLandmark(selectedAddress.landmark || "");
+      setDeliveryInstructions(selectedAddress.delivery_instructions || "");
+    }
+  }, [selectedAddressId]);
 
   const handleFetchLocation = () => {
     if (!navigator.geolocation) {
@@ -480,6 +496,12 @@ const CheckoutPage = () => {
                           label: newLabel,
                           address: fullAddress,
                           is_default: savedAddresses.length === 0,
+                          lat,
+                          lng,
+                          building_name: buildingName || null,
+                          room_number: roomNumber || null,
+                          landmark: landmark || null,
+                          delivery_instructions: deliveryInstructions || null,
                         }).select().single();
                         if (data) {
                           setSavedAddresses((prev) => [...prev, data]);
@@ -574,15 +596,36 @@ const CheckoutPage = () => {
                   <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Delivery Instructions</Label>
                   <Input value={deliveryInstructions} onChange={(e) => setDeliveryInstructions(e.target.value)} placeholder="e.g. Ring the bell twice" className="h-9 text-sm" />
                 </div>
-              </div>
-
-              <div>
+                {selectedAddress && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      if (!selectedAddress) return;
+                      await supabase.from("saved_addresses").update({
+                        building_name: buildingName || null,
+                        room_number: roomNumber || null,
+                        landmark: landmark || null,
+                        delivery_instructions: deliveryInstructions || null,
+                      }).eq("id", selectedAddress.id);
+                      setSavedAddresses(prev => prev.map(a => a.id === selectedAddress.id ? { ...a, building_name: buildingName, room_number: roomNumber, landmark, delivery_instructions: deliveryInstructions } : a));
+                      toast({ title: "Address details saved!" });
+                    }}
+                    className="w-full rounded-xl text-xs uppercase tracking-wider font-heading font-bold"
+                  >
+                    SAVE DETAILS TO THIS ADDRESS
+                  </Button>
+                )}
               </div>
             </div>
           )}
           {expandedSection !== "address" && selectedAddress && (
             <div className="px-4 pb-3">
-              <p className="text-xs text-muted-foreground truncate">{selectedAddress.label}: {selectedAddress.address}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {selectedAddress.label}: {selectedAddress.address?.replace(/\s*\[📍[^\]]*\]/g, "")}
+                {selectedAddress.building_name && ` • ${selectedAddress.building_name}`}
+                {selectedAddress.room_number && `, Room ${selectedAddress.room_number}`}
+              </p>
             </div>
           )}
         </div>
