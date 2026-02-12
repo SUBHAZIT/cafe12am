@@ -47,6 +47,9 @@ const CheckoutPage = () => {
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
+  const [buildingName, setBuildingName] = useState("");
+  const [roomNumber, setRoomNumber] = useState("");
+  const [landmark, setLandmark] = useState("");
 
   // Delivery time
   const [deliveryOption, setDeliveryOption] = useState<"asap" | "scheduled">("asap");
@@ -270,6 +273,10 @@ const CheckoutPage = () => {
       toast({ title: "Please select a delivery address", variant: "destructive" });
       return;
     }
+    if (!buildingName.trim() || !roomNumber.trim()) {
+      toast({ title: "Please fill building name and room number", variant: "destructive" });
+      return;
+    }
     if (cartItems.length === 0) return;
 
     setPlacing(true);
@@ -312,7 +319,13 @@ const CheckoutPage = () => {
         merchant_id: merchantId,
         order_number: orderNumber,
         delivery_address: selectedAddress.address,
-        delivery_notes: deliveryInstructions || orderNotes || null,
+        delivery_notes: [
+          buildingName && `🏢 ${buildingName}`,
+          roomNumber && `🚪 Room: ${roomNumber}`,
+          landmark && `📍 Landmark: ${landmark}`,
+          deliveryInstructions && `📝 ${deliveryInstructions}`,
+          orderNotes && `Note: ${orderNotes}`,
+        ].filter(Boolean).join(" | ") || null,
         subtotal,
         delivery_fee: 0,
         discount,
@@ -540,14 +553,30 @@ const CheckoutPage = () => {
                 </div>
               )}
 
+              {/* Manual Address Details */}
+              <div className="bg-primary/5 rounded-xl p-3 space-y-2 border border-dashed border-primary/20">
+                <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary">Address Details (Required for delivery)</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Building / Hostel Name *</Label>
+                    <Input value={buildingName} onChange={(e) => setBuildingName(e.target.value)} placeholder="e.g. Sunrise Hostel" className="h-9 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Room Number *</Label>
+                    <Input value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} placeholder="e.g. 204" className="h-9 text-sm" />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Landmark</Label>
+                  <Input value={landmark} onChange={(e) => setLandmark(e.target.value)} placeholder="e.g. Near main gate" className="h-9 text-sm" />
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Delivery Instructions</Label>
+                  <Input value={deliveryInstructions} onChange={(e) => setDeliveryInstructions(e.target.value)} placeholder="e.g. Ring the bell twice" className="h-9 text-sm" />
+                </div>
+              </div>
+
               <div>
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-1"><FileText className="w-3 h-3" /> Delivery Instructions (optional)</Label>
-                <Input
-                  value={deliveryInstructions}
-                  onChange={(e) => setDeliveryInstructions(e.target.value)}
-                  placeholder="e.g. Ring the bell twice, leave at door..."
-                  className="h-9 text-sm"
-                />
               </div>
             </div>
           )}
