@@ -37,7 +37,11 @@ const FoundersSection = () => {
       {/* Story */}
       <div className="max-w-3xl mx-auto mb-16 text-center">
         <p className="text-muted-foreground uppercase tracking-wide text-sm leading-relaxed">
-          CAFE12AM WAS BORN IN A COLLEGE HOSTEL ROOM IN 2024. TWO FRIENDS, HUNGRY AT MIDNIGHT WITH NO OPTIONS, DECIDED TO SOLVE THE PROBLEM — NOT JUST FOR THEMSELVES, BUT FOR EVERY STUDENT CRAVING A HOT MEAL AFTER HOURS. WHAT STARTED AS A SIMPLE IDEA QUICKLY BECAME A FULL-FLEDGED PLATFORM SERVING FRESHLY COOKED FOOD TO CAMPUSES LATE INTO THE NIGHT. TODAY, CAFE12AM IS MORE THAN A FOOD DELIVERY SERVICE — IT'S A COMMUNITY BUILT BY STUDENTS, FOR STUDENTS.
+          CAFE12AM WAS BORN IN A COLLEGE HOSTEL ROOM IN 2026. TWO FRIENDS, HUNGRY AT MIDNIGHT WITH NO OPTIONS, DECIDED
+          TO SOLVE THE PROBLEM — NOT JUST FOR THEMSELVES, BUT FOR EVERY STUDENT CRAVING A HOT MEAL AFTER HOURS. WHAT
+          STARTED AS A SIMPLE IDEA QUICKLY BECAME A FULL-FLEDGED PLATFORM SERVING FRESHLY COOKED FOOD TO CAMPUSES LATE
+          INTO THE NIGHT. TODAY, CAFE12AM IS MORE THAN A FOOD DELIVERY SERVICE — IT'S A COMMUNITY BUILT BY STUDENTS, FOR
+          STUDENTS.
         </p>
       </div>
 
@@ -69,9 +73,7 @@ const FoundersSection = () => {
                   </span>
                 ))}
               </div>
-              <p className="text-muted-foreground text-xs uppercase tracking-wide leading-relaxed">
-                {founder.bio}
-              </p>
+              <p className="text-muted-foreground text-xs uppercase tracking-wide leading-relaxed">{founder.bio}</p>
             </div>
           </div>
         ))}

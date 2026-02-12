@@ -9,7 +9,7 @@ const Footer = () => {
           <div>
             <h3 className="font-heading text-2xl font-bold mb-4 uppercase">CAFE12AM</h3>
             <p className="text-card/60 text-sm uppercase tracking-wide leading-relaxed">
-              CAMPUS'S MIDNIGHT SNACK DESTINATION. SATISFYING LATE-NIGHT CRAVINGS SINCE 2024.
+              CAMPUS'S MIDNIGHT SNACK DESTINATION. SATISFYING LATE-NIGHT CRAVINGS SINCE 2026.
             </p>
           </div>
 
@@ -95,7 +95,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-card/10 pt-8 text-center">
-          <p className="text-card/40 text-sm uppercase tracking-wider">© 2024 CAFE12AM. ALL RIGHTS RESERVED.</p>
+          <p className="text-card/40 text-sm uppercase tracking-wider">© 2026 CAFE12AM. ALL RIGHTS RESERVED.</p>
         </div>
       </div>
     </footer>
