@@ -51,32 +51,34 @@ const CustomerMenu = () => {
       if (data && data.length > 0) setDbItems(data);
     };
     const fetchRatings = async () => {
-      // Get all ratings joined with order_items to map back to menu_item_id
-      const { data } = await supabase
-        .from("ratings")
-        .select("rating, order_id, order_items:order_id(menu_item_id)")
-        ;
-      if (data) {
-        const ratingMap: Record<string, { total: number; count: number }> = {};
-        data.forEach((r: any) => {
-          // order_items is an array of items for this order
-          const items = r.order_items;
-          if (Array.isArray(items)) {
-            items.forEach((oi: any) => {
-              if (oi.menu_item_id) {
-                if (!ratingMap[oi.menu_item_id]) ratingMap[oi.menu_item_id] = { total: 0, count: 0 };
-                ratingMap[oi.menu_item_id].total += r.rating;
-                ratingMap[oi.menu_item_id].count += 1;
-              }
-            });
+      const { data: ratingsData } = await supabase.from("ratings").select("rating, order_id");
+      if (!ratingsData || ratingsData.length === 0) return;
+      
+      const orderIds = [...new Set(ratingsData.map((r: any) => r.order_id))];
+      const { data: orderItemsData } = await supabase
+        .from("order_items")
+        .select("order_id, menu_item_id")
+        .in("order_id", orderIds);
+      
+      if (!orderItemsData) return;
+      
+      const ratingMap: Record<string, { total: number; count: number }> = {};
+      ratingsData.forEach((r: any) => {
+        const items = orderItemsData.filter((oi: any) => oi.order_id === r.order_id);
+        items.forEach((oi: any) => {
+          if (oi.menu_item_id) {
+            if (!ratingMap[oi.menu_item_id]) ratingMap[oi.menu_item_id] = { total: 0, count: 0 };
+            ratingMap[oi.menu_item_id].total += r.rating;
+            ratingMap[oi.menu_item_id].count += 1;
           }
         });
-        const result: Record<string, { avg: number; count: number }> = {};
-        Object.entries(ratingMap).forEach(([id, v]) => {
-          result[id] = { avg: v.total / v.count, count: v.count };
-        });
-        setItemRatings(result);
-      }
+      });
+      
+      const result: Record<string, { avg: number; count: number }> = {};
+      Object.entries(ratingMap).forEach(([id, v]) => {
+        result[id] = { avg: v.total / v.count, count: v.count };
+      });
+      setItemRatings(result);
     };
     fetchMenu();
     fetchRatings();
