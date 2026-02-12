@@ -58,7 +58,7 @@ const CheckoutPage = () => {
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
 
   // Payment
-  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [paymentMethod, setPaymentMethod] = useState("upi");
 
   // Order notes
   const [orderNotes, setOrderNotes] = useState("");
@@ -251,7 +251,7 @@ const CheckoutPage = () => {
         message: `Thank you for ordering from CAFÉ12AM! Your order #${orderNumber} has been placed successfully.`,
       }, "VsUWcXNxfOtX_MoJs");
       console.log("Email sent successfully:", result);
-      toast({ title: "Confirmation email sent! 📧" });
+      console.log("Order confirmation email sent successfully");
     } catch (err: any) {
       console.error("Email sending failed:", err);
       toast({ title: "Email could not be sent", description: `Please ensure your EmailJS template has {{to_email}} in the "To Email" field. Error: ${err?.text || err?.message}`, variant: "destructive" });

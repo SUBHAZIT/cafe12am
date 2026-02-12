@@ -43,14 +43,43 @@ const CustomerMenu = () => {
   const [showCheckoutBlock, setShowCheckoutBlock] = useState(false);
   const [tobaccoVerified, setTobaccoVerified] = useState(false);
   const [dbItems, setDbItems] = useState<any[]>([]);
+  const [itemRatings, setItemRatings] = useState<Record<string, { avg: number; count: number }>>({});
 
   useEffect(() => {
     const fetchMenu = async () => {
-      // Fetch ALL menu items (including unavailable ones to show as out of stock)
       const { data } = await supabase.from("menu_items").select("*, categories(name)");
       if (data && data.length > 0) setDbItems(data);
     };
+    const fetchRatings = async () => {
+      // Get all ratings joined with order_items to map back to menu_item_id
+      const { data } = await supabase
+        .from("ratings")
+        .select("rating, order_id, order_items:order_id(menu_item_id)")
+        ;
+      if (data) {
+        const ratingMap: Record<string, { total: number; count: number }> = {};
+        data.forEach((r: any) => {
+          // order_items is an array of items for this order
+          const items = r.order_items;
+          if (Array.isArray(items)) {
+            items.forEach((oi: any) => {
+              if (oi.menu_item_id) {
+                if (!ratingMap[oi.menu_item_id]) ratingMap[oi.menu_item_id] = { total: 0, count: 0 };
+                ratingMap[oi.menu_item_id].total += r.rating;
+                ratingMap[oi.menu_item_id].count += 1;
+              }
+            });
+          }
+        });
+        const result: Record<string, { avg: number; count: number }> = {};
+        Object.entries(ratingMap).forEach(([id, v]) => {
+          result[id] = { avg: v.total / v.count, count: v.count };
+        });
+        setItemRatings(result);
+      }
+    };
     fetchMenu();
+    fetchRatings();
   }, []);
 
   const items = dbItems.length > 0
@@ -129,7 +158,7 @@ const CustomerMenu = () => {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {filtered.map((item) => (
-                  <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} onAdd={handleAdd} onRemove={handleRemove} />
+                  <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} avgRating={itemRatings[item.id]?.avg} ratingCount={itemRatings[item.id]?.count} onAdd={handleAdd} onRemove={handleRemove} />
                 ))}
               </div>
             )}
@@ -153,14 +182,14 @@ const CustomerMenu = () => {
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                   {filtered.slice(0, 4).map((item) => (
-                    <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} onAdd={handleAdd} onRemove={handleRemove} />
+                    <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} avgRating={itemRatings[item.id]?.avg} ratingCount={itemRatings[item.id]?.count} onAdd={handleAdd} onRemove={handleRemove} />
                   ))}
                 </div>
                 <CouponBanner />
                 {filtered.length > 4 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     {filtered.slice(4).map((item) => (
-                      <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} onAdd={handleAdd} onRemove={handleRemove} />
+                      <FoodCard key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image_url={item.image_url} is_veg={item.is_veg} preparation_time_mins={item.preparation_time_mins} is_available={item.is_available} quantity={cartItems[item.id]?.quantity || 0} avgRating={itemRatings[item.id]?.avg} ratingCount={itemRatings[item.id]?.count} onAdd={handleAdd} onRemove={handleRemove} />
                     ))}
                   </div>
                 )}
