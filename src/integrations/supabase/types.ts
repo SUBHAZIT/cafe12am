@@ -843,28 +843,46 @@ export type Database = {
       saved_addresses: {
         Row: {
           address: string
+          building_name: string | null
           created_at: string
+          delivery_instructions: string | null
           id: string
           is_default: boolean
           label: string
+          landmark: string | null
+          lat: number | null
+          lng: number | null
+          room_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           address: string
+          building_name?: string | null
           created_at?: string
+          delivery_instructions?: string | null
           id?: string
           is_default?: boolean
           label?: string
+          landmark?: string | null
+          lat?: number | null
+          lng?: number | null
+          room_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           address?: string
+          building_name?: string | null
           created_at?: string
+          delivery_instructions?: string | null
           id?: string
           is_default?: boolean
           label?: string
+          landmark?: string | null
+          lat?: number | null
+          lng?: number | null
+          room_number?: string | null
           updated_at?: string
           user_id?: string
         }
