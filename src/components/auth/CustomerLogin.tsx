@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, ArrowRight, Sparkles, User, Phone, MapPin, KeyRound, ArrowLeft } from "lucide-react";
+import { Mail, Lock, ArrowRight, Sparkles, User, Phone, KeyRound, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -12,7 +12,7 @@ const CustomerLogin = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -33,10 +33,6 @@ const CustomerLogin = () => {
       toast({ title: "Invalid phone", description: "Please enter a valid 10-digit Indian phone number", variant: "destructive" });
       return;
     }
-    if (!address.trim() || address.trim().length < 10) {
-      toast({ title: "Address required", description: "Please enter your full delivery address (min 10 characters)", variant: "destructive" });
-      return;
-    }
     if (password.length < 6) {
       toast({ title: "Weak password", description: "Password must be at least 6 characters", variant: "destructive" });
       return;
@@ -51,7 +47,6 @@ const CustomerLogin = () => {
         data: {
           full_name: fullName,
           phone: `+91${phone}`,
-          address,
         },
       },
     });
@@ -207,16 +202,6 @@ const CustomerLogin = () => {
                       onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                       maxLength={10}
                       className="pl-12 h-14 rounded-xl text-base bg-secondary border-0"
-                    />
-                  </div>
-                  <div className="relative">
-                    <MapPin className="absolute left-4 top-4 w-5 h-5 text-muted-foreground" />
-                    <textarea
-                      placeholder="Full Delivery Address"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      rows={2}
-                      className="w-full pl-12 pr-4 py-3 rounded-xl text-base bg-secondary border-0 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                 </>

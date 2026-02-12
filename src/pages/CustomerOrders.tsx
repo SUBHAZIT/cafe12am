@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import CustomerNav from "@/components/customer/CustomerNav";
-import { Package, Clock, CheckCircle, Truck, ChefHat, MapPin, XCircle, Star } from "lucide-react";
+import { Package, Clock, CheckCircle, Truck, ChefHat, MapPin, XCircle, Star, Phone, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
@@ -42,6 +42,8 @@ const CustomerOrders = () => {
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [ratingComments, setRatingComments] = useState<Record<string, string>>({});
   const [submittedRatings, setSubmittedRatings] = useState<Set<string>>(new Set());
+  const [merchantPhone, setMerchantPhone] = useState<string | null>(null);
+  const [riderPhones, setRiderPhones] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!profile) return;
@@ -72,6 +74,40 @@ const CustomerOrders = () => {
 
     fetchOrders();
     fetchRatings();
+
+    // Fetch merchant phone
+    const fetchMerchantPhone = async () => {
+      const { data } = await supabase
+        .from("merchant_settings")
+        .select("merchant_id")
+        .limit(1)
+        .maybeSingle();
+      if (data?.merchant_id) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("phone")
+          .eq("id", data.merchant_id)
+          .maybeSingle();
+        if (prof?.phone) setMerchantPhone(prof.phone);
+      }
+    };
+    fetchMerchantPhone();
+
+    // Fetch rider phones for assigned orders
+    const fetchRiderPhones = async () => {
+      const { data } = await supabase
+        .from("delivery_assignments")
+        .select("order_id, delivery_partner_id, status, profiles:profiles!delivery_assignments_delivery_partner_id_fkey(phone)")
+        .in("status", ["accepted", "picked_up"]);
+      if (data) {
+        const phones: Record<string, string> = {};
+        data.forEach((d: any) => {
+          if (d.profiles?.phone) phones[d.order_id] = d.profiles.phone;
+        });
+        setRiderPhones(phones);
+      }
+    };
+    fetchRiderPhones();
 
     const channel = supabase
       .channel("customer-orders")
@@ -111,6 +147,8 @@ const CustomerOrders = () => {
       toast({ title: "Thank you for your feedback! ⭐" });
     }
   };
+
+  const WHATSAPP_SUPPORT = "https://wa.me/917604094568?text=Hi%20Cafe12AM%2C%20I%20need%20help%20with%20my%20order";
 
   return (
     <div className="min-h-screen bg-background">
@@ -250,6 +288,28 @@ const CustomerOrders = () => {
                             <p className="text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">DELIVERY TO</p>
                             <p className="text-sm text-foreground mt-0.5">{order.delivery_address}</p>
                           </div>
+                        </div>
+                      )}
+
+                      {/* Call buttons for active orders */}
+                      {isActive && (
+                        <div className="flex gap-2">
+                          {merchantPhone && ["placed", "pending", "preparing", "ready_for_pickup"].includes(order.status) && (
+                            <a href={`tel:${merchantPhone}`} className="flex-1 flex items-center justify-center gap-2 bg-secondary rounded-xl p-3 hover:bg-secondary/80 transition-colors">
+                              <Phone className="w-4 h-4 text-primary" />
+                              <span className="font-heading font-bold text-[10px] uppercase tracking-wider">CALL KITCHEN</span>
+                            </a>
+                          )}
+                          {riderPhones[order.id] && ["rider_assigned", "out_for_delivery"].includes(order.status) && (
+                            <a href={`tel:${riderPhones[order.id]}`} className="flex-1 flex items-center justify-center gap-2 bg-secondary rounded-xl p-3 hover:bg-secondary/80 transition-colors">
+                              <Phone className="w-4 h-4 text-primary" />
+                              <span className="font-heading font-bold text-[10px] uppercase tracking-wider">CALL RIDER</span>
+                            </a>
+                          )}
+                          <a href={WHATSAPP_SUPPORT} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-green-50 rounded-xl p-3 hover:bg-green-100 transition-colors">
+                            <MessageCircle className="w-4 h-4 text-green-600" />
+                            <span className="font-heading font-bold text-[10px] uppercase tracking-wider text-green-700">SUPPORT</span>
+                          </a>
                         </div>
                       )}
 
