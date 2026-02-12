@@ -294,17 +294,16 @@ const AdminPanel = () => {
     );
   };
 
-  const CreateForm = ({ fields, values, onChange, onSubmit, label }: any) => (
+  const renderCreateForm = (fields: any[], values: any, onChange: any, onSubmit: any, label: string) => (
     <div className="bg-card rounded-2xl p-6 shadow-card mb-6 space-y-3">
       {fields.map((f: any) => (
-        <Input
+        <input
           key={f.key}
           placeholder={f.placeholder}
           type={f.type || "text"}
           value={values[f.key]}
           onChange={(e) => onChange({ ...values, [f.key]: e.target.value })}
-          onPointerDown={(e) => e.stopPropagation()}
-          className="rounded-xl bg-secondary border border-border focus:border-primary"
+          className="flex h-10 w-full rounded-xl bg-secondary border border-border focus:border-primary px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
         />
       ))}
       <Button onClick={onSubmit} disabled={loading} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
@@ -466,19 +465,14 @@ const AdminPanel = () => {
                 <Plus className="w-4 h-4 mr-1" /> CREATE
               </Button>
             </div>
-            {showCreateMerchant && (
-              <CreateForm
-                fields={[
-                  { key: "full_name", placeholder: "Full Name" },
-                  { key: "email", placeholder: "Email", type: "email" },
-                  { key: "password", placeholder: "Password", type: "password" },
-                  { key: "phone", placeholder: "Phone" },
-                ]}
-                values={newMerchant}
-                onChange={setNewMerchant}
-                onSubmit={createMerchant}
-                label="MERCHANT"
-              />
+            {showCreateMerchant && renderCreateForm(
+              [
+                { key: "full_name", placeholder: "Full Name" },
+                { key: "email", placeholder: "Email", type: "email" },
+                { key: "password", placeholder: "Password", type: "password" },
+                { key: "phone", placeholder: "Phone" },
+              ],
+              newMerchant, setNewMerchant, createMerchant, "MERCHANT"
             )}
             <div className="space-y-3">
               {merchants.map((m: any) => <UserCard key={m.id} user={m} type="merchant" />)}
@@ -496,19 +490,14 @@ const AdminPanel = () => {
                 <Plus className="w-4 h-4 mr-1" /> CREATE
               </Button>
             </div>
-            {showCreateRider && (
-              <CreateForm
-                fields={[
-                  { key: "full_name", placeholder: "Full Name" },
-                  { key: "email", placeholder: "Email", type: "email" },
-                  { key: "password", placeholder: "Password", type: "password" },
-                  { key: "phone", placeholder: "Phone" },
-                ]}
-                values={newRider}
-                onChange={setNewRider}
-                onSubmit={createRider}
-                label="RIDER"
-              />
+            {showCreateRider && renderCreateForm(
+              [
+                { key: "full_name", placeholder: "Full Name" },
+                { key: "email", placeholder: "Email", type: "email" },
+                { key: "password", placeholder: "Password", type: "password" },
+                { key: "phone", placeholder: "Phone" },
+              ],
+              newRider, setNewRider, createRider, "RIDER"
             )}
             <div className="space-y-3">
               {riders.map((r: any) => <UserCard key={r.id} user={r} type="rider" />)}
@@ -546,11 +535,16 @@ const AdminPanel = () => {
                         <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="text-right">
+                        <div className="text-right space-y-1">
                          <p className="font-heading font-bold text-primary">₹{o.total_amount}</p>
                           <span className="text-xs uppercase tracking-wider bg-secondary px-2 py-0.5 rounded-full">{o.status}</span>
-                          {o.payment_status === "failed" && <span className="text-xs uppercase tracking-wider bg-red-100 text-red-700 px-2 py-0.5 rounded-full ml-1">PAY FAILED</span>}
-                          {o.payment_status === "awaiting" && <span className="text-xs uppercase tracking-wider bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full ml-1">AWAITING</span>}
+                          {o.payment_method === "cod" ? (
+                            <span className="text-xs uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-1">COD</span>
+                          ) : o.payment_status === "paid" ? (
+                            <span className="text-xs uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-1">PAID ✓</span>
+                          ) : (
+                            <span className="text-xs uppercase tracking-wider bg-red-100 text-red-700 px-2 py-0.5 rounded-full ml-1">PAY FAILED</span>
+                          )}
                         </div>
                         {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                       </div>
