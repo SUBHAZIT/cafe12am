@@ -233,7 +233,7 @@ const CheckoutPage = () => {
 
       if (result.error) {
         toast({ title: "Payment failed", description: result.error.message, variant: "destructive" });
-        await supabase.from("orders").update({ payment_status: "failed" }).eq("id", orderId);
+        await supabase.from("orders").update({ payment_status: "failed", status: "cancelled" }).eq("id", orderId);
         return false;
       }
 
@@ -372,7 +372,9 @@ const CheckoutPage = () => {
       if (isOnlinePayment) {
         const paymentSuccess = await initiateCashfreePayment(order.id, orderNumber, finalTotal);
         if (!paymentSuccess) {
-          toast({ title: "Payment incomplete", description: "Your order has been saved. Complete payment to confirm.", variant: "destructive" });
+          // Mark as failed
+          await supabase.from("orders").update({ payment_status: "failed", status: "cancelled" }).eq("id", order.id);
+          toast({ title: "Payment failed", description: "Your order has been cancelled. Please try again.", variant: "destructive" });
           setPlacing(false);
           navigate("/order/orders");
           return;
