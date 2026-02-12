@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import CategoryManager from "@/components/merchant/CategoryManager";
 import MenuItemManager from "@/components/merchant/MenuItemManager";
 import ComboManager from "@/components/merchant/ComboManager";
+import emailjs from "@emailjs/browser";
 
 type Tab = "new" | "preparing" | "ready" | "completed" | "menu" | "dashboard";
 type MenuSubTab = "categories" | "items" | "combos";
@@ -113,14 +114,53 @@ const MerchantDashboard = () => {
   };
 
   const rejectOrder = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
     await supabase.from("orders").update({
       status: "cancelled",
       delivery_notes: rejectReason ? `Rejected: ${rejectReason}` : "Rejected by merchant"
     }).eq("id", orderId);
+    
+    // Send rejection email
+    if (order) {
+      sendRejectionEmail(order, rejectReason || "Order could not be fulfilled at this time");
+    }
+    
     setRejectingOrderId(null);
     setRejectReason("");
     fetchOrders();
     toast({ title: "Order rejected", variant: "destructive" });
+  };
+
+  const sendRejectionEmail = async (order: any, reason: string) => {
+    try {
+      // Get customer profile to find email
+      const { data: customerProfile } = await supabase
+        .from("profiles")
+        .select("email, full_name")
+        .eq("id", order.customer_id)
+        .maybeSingle();
+      
+      const customerEmail = customerProfile?.email;
+      if (!customerEmail) {
+        console.warn("No customer email found for rejection notification");
+        return;
+      }
+
+      const itemsHtml = order.order_items?.map((i: any) => `${i.item_name} x${i.quantity} — ₹${i.total_price}`).join("\n") || "";
+
+      await emailjs.send("service_iyz5u2i", "template_1e37z7b", {
+        to_email: customerEmail,
+        to_name: customerProfile?.full_name || "Customer",
+        order_id: order.order_number,
+        order_items: itemsHtml,
+        total_amount: `₹${order.total_amount}`,
+        reason: reason,
+        message: `We're sorry, your order #${order.order_number} has been rejected. Reason: ${reason}`,
+      }, "VsUWcXNxfOtX_MoJs");
+      console.log("Rejection email sent to", customerEmail);
+    } catch (err: any) {
+      console.error("Failed to send rejection email:", err);
+    }
   };
 
   const markReady = async (orderId: string) => {

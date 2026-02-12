@@ -547,8 +547,10 @@ const AdminPanel = () => {
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <p className="font-heading font-bold text-primary">₹{o.total_amount}</p>
+                         <p className="font-heading font-bold text-primary">₹{o.total_amount}</p>
                           <span className="text-xs uppercase tracking-wider bg-secondary px-2 py-0.5 rounded-full">{o.status}</span>
+                          {o.payment_status === "failed" && <span className="text-xs uppercase tracking-wider bg-red-100 text-red-700 px-2 py-0.5 rounded-full ml-1">PAY FAILED</span>}
+                          {o.payment_status === "awaiting" && <span className="text-xs uppercase tracking-wider bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full ml-1">AWAITING</span>}
                         </div>
                         {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                       </div>
