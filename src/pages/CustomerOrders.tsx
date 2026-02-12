@@ -153,8 +153,8 @@ const CustomerOrders = () => {
   return (
     <div className="min-h-screen bg-background">
       <CustomerNav />
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="font-heading text-3xl font-bold uppercase tracking-tight mb-8">MY ORDERS</h1>
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-6">
+        <h1 className="font-heading text-2xl font-bold uppercase tracking-tight mb-6">MY ORDERS</h1>
 
         {loading ? (
           <div className="space-y-4">
@@ -282,11 +282,11 @@ const CustomerOrders = () => {
 
                       {/* Delivery info */}
                       {order.delivery_address && (
-                        <div className="flex items-start gap-2 p-3 bg-secondary/50 rounded-xl">
+                        <div className="flex items-start gap-2 p-3 bg-secondary/50 rounded-xl overflow-hidden">
                           <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <p className="text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">DELIVERY TO</p>
-                            <p className="text-sm text-foreground mt-0.5">{order.delivery_address}</p>
+                            <p className="text-sm text-foreground mt-0.5 break-words">{order.delivery_address?.replace(/\s*\[📍[^\]]*\]/g, "")}</p>
                           </div>
                         </div>
                       )}

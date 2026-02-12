@@ -177,12 +177,19 @@ const MerchantDashboard = () => {
     return Math.max(0, AUTO_CANCEL_MINUTES * 60 - Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000));
   };
 
-  const newOrders = orders.filter(o => o.status === "placed" || o.status === "pending");
-  const preparingOrders = orders.filter(o => o.status === "preparing");
-  const readyOrders = orders.filter(o => o.status === "ready_for_pickup" || o.status === "rider_assigned");
-  const completedOrders = orders.filter(o => ["out_for_delivery", "delivered", "cancelled"].includes(o.status));
-  const todayOrders = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString());
-  const todayRevenue = todayOrders.filter(o => o.status !== "cancelled").reduce((a, o) => a + Number(o.total_amount || 0), 0);
+  // Filter out online payment orders that haven't been paid yet
+  const paidOrCodOrders = orders.filter(o => {
+    if (o.payment_method === "cod") return true;
+    // Online payment: only show if payment completed
+    return o.payment_status === "paid";
+  });
+  
+  const newOrders = paidOrCodOrders.filter(o => o.status === "placed" || o.status === "pending");
+  const preparingOrders = paidOrCodOrders.filter(o => o.status === "preparing");
+  const readyOrders = paidOrCodOrders.filter(o => o.status === "ready_for_pickup" || o.status === "rider_assigned");
+  const completedOrders = paidOrCodOrders.filter(o => ["out_for_delivery", "delivered", "cancelled"].includes(o.status));
+  const todayOrders = paidOrCodOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString());
+  const todayRevenue = todayOrders.filter(o => o.status === "delivered").reduce((a, o) => a + Number(o.total_amount || 0), 0);
 
   const tabs = [
     { id: "new" as Tab, label: "NEW", icon: Bell, count: newOrders.length, alert: newOrders.length > 0 },

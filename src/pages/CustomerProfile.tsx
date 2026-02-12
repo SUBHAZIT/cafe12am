@@ -127,81 +127,83 @@ const CustomerProfile = () => {
     <div className="min-h-screen bg-background">
       <CustomerNav />
 
-      {/* Profile header */}
-      <div className="section-pink py-8 px-4">
+      {/* Profile header - edge-to-edge */}
+      <div className="bg-primary/5 py-6 px-4">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
-          <Avatar className="w-20 h-20 border-4 border-primary/20">
+          <Avatar className="w-16 h-16 border-2 border-primary/20 shrink-0">
             <AvatarImage src={profile?.avatar_url} />
-            <AvatarFallback className="bg-primary text-primary-foreground text-xl font-heading font-bold">{initials}</AvatarFallback>
+            <AvatarFallback className="bg-primary text-primary-foreground text-lg font-heading font-bold">{initials}</AvatarFallback>
           </Avatar>
-          <div>
-            <h1 className="font-heading text-2xl font-bold uppercase tracking-tight text-foreground">{profile?.full_name || "USER"}</h1>
-            <p className="text-sm text-muted-foreground">{profile?.email || profile?.phone}</p>
+          <div className="min-w-0">
+            <h1 className="font-heading text-xl font-bold uppercase tracking-tight text-foreground truncate">{profile?.full_name || "USER"}</h1>
+            <p className="text-sm text-muted-foreground truncate">{profile?.email || profile?.phone}</p>
           </div>
         </div>
       </div>
 
-      {/* Section tabs */}
-      <div className="max-w-2xl mx-auto px-4 py-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {sections.map((s) => (
-            <button key={s.id} onClick={() => setSection(s.id)} className={`flex items-center gap-2 px-4 py-2 rounded-full font-heading font-bold text-xs uppercase tracking-wider whitespace-nowrap transition-all ${section === s.id ? "bg-primary text-primary-foreground shadow-soft" : "bg-card text-muted-foreground hover:bg-secondary"}`}>
-              <s.icon className="w-4 h-4" />{s.label}
-            </button>
-          ))}
+      {/* Section tabs - horizontal scroll */}
+      <div className="sticky top-0 z-30 bg-background border-b border-border">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="flex gap-0 overflow-x-auto scrollbar-hide">
+            {sections.map((s) => (
+              <button key={s.id} onClick={() => setSection(s.id)} className={`flex items-center gap-1.5 px-4 py-3 font-heading font-bold text-xs uppercase tracking-wider whitespace-nowrap transition-all border-b-2 ${section === s.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+                <s.icon className="w-4 h-4" />{s.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 pb-24">
+      <div className="max-w-2xl mx-auto px-4 py-4 pb-24">
         {/* Basic Info */}
         {section === "profile" && (
-          <div className="bg-card rounded-2xl p-6 shadow-card space-y-4">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="font-heading text-lg font-bold uppercase tracking-tight">PERSONAL DETAILS</h2>
+          <div className="space-y-0 bg-card rounded-2xl shadow-card overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b border-border">
+              <h2 className="font-heading text-sm font-bold uppercase tracking-tight">PERSONAL DETAILS</h2>
               {!editing ? (
-                <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
+                <Button size="sm" variant="ghost" onClick={() => setEditing(true)} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider text-primary">
                   <Edit className="w-3 h-3 mr-1" /> EDIT
                 </Button>
               ) : (
                 <div className="flex gap-2">
                   <Button size="sm" variant="ghost" onClick={() => setEditing(false)} className="rounded-full"><X className="w-4 h-4" /></Button>
                   <Button size="sm" onClick={saveProfile} disabled={saving} className="rounded-full font-heading font-bold text-xs uppercase tracking-wider">
-                    <Save className="w-3 h-3 mr-1" /> {saving ? "SAVING..." : "SAVE"}
+                    <Save className="w-3 h-3 mr-1" /> {saving ? "..." : "SAVE"}
                   </Button>
                 </div>
               )}
             </div>
 
             {editing ? (
-              <div className="space-y-3">
+              <div className="p-4 space-y-3">
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider font-heading font-bold">Full Name</label>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-heading font-bold">Full Name</label>
                   <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="rounded-xl bg-secondary border-0 mt-1" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider font-heading font-bold">Phone</label>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-heading font-bold">Phone</label>
                   <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="rounded-xl bg-secondary border-0 mt-1" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider font-heading font-bold">Email</label>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-heading font-bold">Email</label>
                   <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-xl bg-secondary border-0 mt-1" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider font-heading font-bold">Default Address</label>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-heading font-bold">Default Address</label>
                   <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="rounded-xl bg-secondary border-0 mt-1" />
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div>
                 {[
                   { label: "NAME", value: profile?.full_name || "—" },
                   { label: "PHONE", value: profile?.phone || "—" },
                   { label: "EMAIL", value: profile?.email || "—" },
                   { label: "ADDRESS", value: profile?.address || "—" },
                 ].map((item) => (
-                  <div key={item.label} className="flex justify-between py-2 border-b border-border last:border-0">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">{item.label}</span>
-                    <span className="font-heading font-semibold text-sm text-right max-w-[60%]">{item.value}</span>
+                  <div key={item.label} className="flex items-start justify-between px-4 py-3 border-b border-border last:border-0">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider shrink-0 pt-0.5">{item.label}</span>
+                    <span className="font-heading font-semibold text-sm text-right break-words max-w-[65%]">{item.value}</span>
                   </div>
                 ))}
               </div>
@@ -254,26 +256,27 @@ const CustomerProfile = () => {
                 <p className="text-muted-foreground uppercase tracking-wider text-sm">NO SAVED ADDRESSES</p>
               </div>
             ) : addresses.map((a) => (
-              <div key={a.id} className="bg-card rounded-2xl p-4 shadow-card flex items-start justify-between">
+              <div key={a.id} className="bg-card rounded-2xl p-4 shadow-card">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center mt-0.5">
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-0.5">
                     <MapPin className="w-4 h-4 text-primary" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-heading font-bold text-sm uppercase tracking-wide">{a.label}</p>
                       {a.is_default && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-heading font-bold uppercase">DEFAULT</span>}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">{a.address}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5 break-words">{a.address}</p>
+                    {a.building_name && <p className="text-xs text-muted-foreground mt-0.5">🏢 {a.building_name}{a.room_number ? ` · Room ${a.room_number}` : ""}</p>}
                   </div>
-                </div>
-                <div className="flex gap-1">
-                  <button onClick={() => { setEditingAddressId(a.id); setAddressForm({ label: a.label, address: a.address, is_default: a.is_default }); setShowAddAddress(true); }} className="p-2 rounded-full hover:bg-secondary">
-                    <Edit className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                  <button onClick={() => deleteAddress(a.id)} className="p-2 rounded-full hover:bg-secondary">
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </button>
+                  <div className="flex gap-1 shrink-0">
+                    <button onClick={() => { setEditingAddressId(a.id); setAddressForm({ label: a.label, address: a.address, is_default: a.is_default }); setShowAddAddress(true); }} className="p-2 rounded-full hover:bg-secondary">
+                      <Edit className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                    <button onClick={() => deleteAddress(a.id)} className="p-2 rounded-full hover:bg-secondary">
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

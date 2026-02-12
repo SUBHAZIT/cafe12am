@@ -297,7 +297,7 @@ const CheckoutPage = () => {
 
     setPlacing(true);
     try {
-      const orderNumber = `C12AM-${Date.now().toString(36).toUpperCase()}`;
+      const tempOrderNumber = `C12AM-${Date.now().toString(36).toUpperCase()}`;
       
       // Get merchant_id from the first cart item's menu_item
       let merchantId: string | null = null;
@@ -333,7 +333,7 @@ const CheckoutPage = () => {
       const { data: order, error: orderError } = await supabase.from("orders").insert({
         customer_id: profile.id,
         merchant_id: merchantId,
-        order_number: orderNumber,
+        order_number: tempOrderNumber,
         delivery_address: selectedAddress.address,
         delivery_notes: [
           buildingName && `🏢 ${buildingName}`,
@@ -353,6 +353,9 @@ const CheckoutPage = () => {
       }).select().single();
 
       if (orderError) throw orderError;
+
+      // The DB trigger generates the actual order_number, use it for Cashfree
+      const orderNumber = order.order_number;
 
       const orderItems = cartItems.map((item) => ({
         order_id: order.id,
