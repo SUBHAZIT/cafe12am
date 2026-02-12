@@ -57,8 +57,8 @@ const CustomerOrders = () => {
       if (data) {
         // Mark orders with failed online payment
         const processed = data.map(o => {
-          // Online payment orders that aren't paid = payment failed
-          if (o.payment_method !== "cod" && o.payment_status !== "paid" && o.payment_status !== "pending" && o.status !== "cancelled") {
+          // Online payment orders that aren't explicitly paid = payment failed
+          if (o.payment_method !== "cod" && o.payment_status !== "paid" && o.status !== "cancelled") {
             return { ...o, _display_status: "payment_failed" };
           }
           return { ...o, _display_status: o.status };
