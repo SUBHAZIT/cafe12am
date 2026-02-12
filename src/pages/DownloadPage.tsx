@@ -49,7 +49,7 @@ const DownloadPage = () => {
 
             <div className="bg-primary/5 rounded-2xl p-6 mb-6 max-w-lg mx-auto">
               <p className="font-heading font-bold text-sm uppercase tracking-wider text-primary mb-2">
-                🎉 COMING SOON ON GOOGLE PLAY STORE
+                COMING SOON ON GOOGLE PLAY STORE
               </p>
               <p className="text-muted-foreground text-sm uppercase tracking-wide leading-relaxed">
                 WE'VE APPLIED FOR THE GOOGLE PLAY DEVELOPER PROGRAMME. UNTIL THEN, SCAN THE QR CODE ON OUR LANDING PAGE OR CLICK BELOW TO DOWNLOAD THE APK DIRECTLY.
