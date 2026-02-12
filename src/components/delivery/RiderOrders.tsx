@@ -16,11 +16,21 @@ interface RiderOrdersProps {
   onDeliver: (id: string, otp: string) => void;
 }
 
-const getGoogleMapsLink = (address: string) => {
-  // Check if address contains an embedded maps link [📍 https://...]
-  const linkMatch = address.match(/\[📍\s*(https:\/\/www\.google\.com\/maps\?q=[^\]]+)\]/);
-  if (linkMatch) return linkMatch[1];
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+const getGoogleMapsNavLink = (address: string) => {
+  // Extract coordinates from embedded link [📍 https://www.google.com/maps?q=LAT,LNG]
+  const coordMatch = address.match(/\[📍\s*https:\/\/www\.google\.com\/maps\?q=([\d.-]+),([\d.-]+)\]/);
+  if (coordMatch) {
+    const lat = coordMatch[1];
+    const lng = coordMatch[2];
+    // Use google maps directions URL which auto-opens in Google Maps app on mobile
+    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+  }
+  // Fallback: search by address text (strip any marker text)
+  const cleanAddress = address.replace(/\[📍[^\]]*\]/g, "").trim();
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(cleanAddress)}&travelmode=driving`;
+};
+const getCleanAddress = (address: string) => {
+  return address.replace(/\s*\[📍[^\]]*\]/g, "").trim();
 };
 const getTimeSince = (dateStr: string) => {
   const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
@@ -191,7 +201,7 @@ const IncomingOrderCard = ({ assignment: a, onAccept, onDecline }: { assignment:
           <MapPin className="w-3 h-3" /> DELIVER TO
         </p>
         <p className="text-sm font-bold">{customer?.full_name || "Customer"}</p>
-        <p className="text-xs text-muted-foreground">{a.orders?.delivery_address}</p>
+        <p className="text-xs text-muted-foreground">{getCleanAddress(a.orders?.delivery_address || "")}</p>
         {customer?.phone && (
           <a href={`tel:${customer.phone}`} className="inline-flex items-center gap-1 text-xs text-green-600 mt-1">
             <Phone className="w-3 h-3" /> {customer.phone}
@@ -275,12 +285,12 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
           {stage === "pickup" ? "PICKUP FROM" : "DELIVER TO"}
         </p>
         <p className="text-sm font-bold">{targetName}</p>
-        <p className="text-sm text-foreground">{targetAddress}</p>
+        <p className="text-sm text-foreground">{getCleanAddress(targetAddress)}</p>
 
         <div className="flex gap-2">
           {targetAddress && (
             <a
-              href={getGoogleMapsLink(targetAddress)}
+              href={getGoogleMapsNavLink(targetAddress)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-xs font-heading font-bold uppercase tracking-wider hover:bg-primary/90 transition-colors"
@@ -306,7 +316,7 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
             <User className="w-3 h-3" /> CUSTOMER
           </p>
           <p className="text-sm font-bold">{customer.full_name}</p>
-          <p className="text-xs text-muted-foreground">{a.orders?.delivery_address}</p>
+          <p className="text-xs text-muted-foreground">{getCleanAddress(a.orders?.delivery_address || "")}</p>
         </div>
       )}
 
