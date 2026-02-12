@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import {
   Package, Navigation, MapPin, ExternalLink, Phone, Clock, CheckCircle,
   Truck, XCircle, Timer, ChefHat, User, IndianRupee, AlertCircle, KeyRound,
-  Banknote, QrCode
+  Banknote, QrCode, MessageCircle
 } from "lucide-react";
 import bharatpeQr from "@/assets/bharatpe-qr.jpeg";
 
@@ -16,9 +16,12 @@ interface RiderOrdersProps {
   onDeliver: (id: string, otp: string) => void;
 }
 
-const getGoogleMapsLink = (address: string) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-
+const getGoogleMapsLink = (address: string) => {
+  // Check if address contains an embedded maps link [📍 https://...]
+  const linkMatch = address.match(/\[📍\s*(https:\/\/www\.google\.com\/maps\?q=[^\]]+)\]/);
+  if (linkMatch) return linkMatch[1];
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+};
 const getTimeSince = (dateStr: string) => {
   const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
   if (mins < 1) return "Just now";
@@ -27,6 +30,7 @@ const getTimeSince = (dateStr: string) => {
 };
 
 const EARNING_PER_DELIVERY = 20;
+const WHATSAPP_SUPPORT = "https://wa.me/917604094568?text=Hi%20Cafe12AM%2C%20I%20need%20help%20with%20a%20delivery";
 
 const RiderOrders = ({ assignments, onAccept, onDecline, onPickup, onDeliver }: RiderOrdersProps) => {
   const [, setTick] = useState(0);
@@ -102,6 +106,17 @@ const RiderOrders = ({ assignments, onAccept, onDecline, onPickup, onDeliver }: 
           ))}
         </div>
       )}
+
+      {/* WhatsApp Support */}
+      <a
+        href={WHATSAPP_SUPPORT}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 bg-green-50 hover:bg-green-100 rounded-2xl p-4 transition-colors shadow-card"
+      >
+        <MessageCircle className="w-5 h-5 text-green-600" />
+        <span className="font-heading font-bold text-xs uppercase tracking-wider text-green-700">WHATSAPP SUPPORT</span>
+      </a>
     </div>
   );
 };

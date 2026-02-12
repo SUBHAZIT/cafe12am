@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import CustomerNav from "@/components/customer/CustomerNav";
+import GoogleMapPicker from "@/components/customer/GoogleMapPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +15,7 @@ import foodBurger from "@/assets/food-burger.png";
 import {
   Plus, Minus, Trash2, Tag, X, MapPin, Clock, CreditCard, Banknote,
   Wallet, Shield, Zap, Headphones, ChevronDown, ChevronUp, Navigation,
-  Edit3, Phone, User, FileText, Sparkles,
+  Edit3, Phone, User, FileText, Sparkles, Map,
 } from "lucide-react";
 import emailjs from "@emailjs/browser";
 
@@ -42,6 +43,7 @@ const CheckoutPage = () => {
   const [newLabel, setNewLabel] = useState("Home");
   const [newAddress, setNewAddress] = useState("");
   const [fetchingLocation, setFetchingLocation] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
@@ -445,9 +447,53 @@ const CheckoutPage = () => {
               )}
 
               {!showAddressForm ? (
-                <Button variant="outline" onClick={() => setShowAddressForm(true)} className="w-full rounded-xl text-xs uppercase tracking-wider font-heading font-bold">
-                  <Plus className="w-3 h-3 mr-1" /> ADD NEW ADDRESS
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setShowAddressForm(true)} className="flex-1 rounded-xl text-xs uppercase tracking-wider font-heading font-bold">
+                    <Plus className="w-3 h-3 mr-1" /> ADD NEW ADDRESS
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowMapPicker(true)} className="flex-1 rounded-xl text-xs uppercase tracking-wider font-heading font-bold">
+                    <Map className="w-3 h-3 mr-1" /> PICK ON MAP
+                  </Button>
+                </div>
+              ) : showMapPicker ? (
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-primary/5">
+                  <GoogleMapPicker
+                    onSelectLocation={async (addr, lat, lng) => {
+                      const googleMapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                      const fullAddress = `${addr} [📍 ${googleMapsLink}]`;
+                      if (profile?.id) {
+                        const { data, error } = await supabase.from("saved_addresses").insert({
+                          user_id: profile.id,
+                          label: newLabel,
+                          address: fullAddress,
+                          is_default: savedAddresses.length === 0,
+                        }).select().single();
+                        if (data) {
+                          setSavedAddresses((prev) => [...prev, data]);
+                          setSelectedAddressId(data.id);
+                          toast({ title: "Location saved!" });
+                        }
+                        if (error) toast({ title: "Failed to save", variant: "destructive" });
+                      }
+                      setShowMapPicker(false);
+                      setShowAddressForm(false);
+                    }}
+                    onClose={() => { setShowMapPicker(false); setShowAddressForm(false); }}
+                  />
+                  <div className="flex gap-2 mt-2">
+                    {["Home", "Hostel", "Office", "Other"].map((l) => (
+                      <button
+                        key={l}
+                        onClick={() => setNewLabel(l)}
+                        className={`px-3 py-1 rounded-full text-[10px] font-heading font-bold uppercase tracking-wider transition-all ${
+                          newLabel === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-2 p-3 rounded-xl border border-dashed border-primary/30 bg-primary/5">
                   <div className="flex gap-2">
@@ -472,12 +518,19 @@ const CheckoutPage = () => {
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
+                      onClick={() => { setShowMapPicker(true); }}
+                      className="flex-1 rounded-xl text-xs uppercase tracking-wider font-heading font-bold"
+                    >
+                      <Map className="w-3 h-3 mr-1" /> PICK ON MAP
+                    </Button>
+                    <Button
+                      variant="outline"
                       onClick={handleFetchLocation}
                       disabled={fetchingLocation}
                       className="flex-1 rounded-xl text-xs uppercase tracking-wider font-heading font-bold"
                     >
                       <Navigation className="w-3 h-3 mr-1" />
-                      {fetchingLocation ? "FETCHING..." : "USE CURRENT LOCATION"}
+                      {fetchingLocation ? "..." : "DETECT"}
                     </Button>
                     <Button onClick={handleSaveAddress} className="rounded-xl text-xs uppercase tracking-wider font-heading font-bold">
                       SAVE
