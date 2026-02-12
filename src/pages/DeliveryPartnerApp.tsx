@@ -162,7 +162,7 @@ const DeliveryPartnerApp = () => {
       }
     }
     fetchAssignments();
-    toast({ title: `Picked up! OTP: ${otp} sent to customer.` });
+    toast({ title: "Order picked up! Customer has been notified." });
   };
 
   const deliverOrder = async (id: string, enteredOtp: string) => {

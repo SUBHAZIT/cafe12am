@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Package, Navigation, MapPin, ExternalLink, Phone, Clock, CheckCircle,
-  Truck, XCircle, Timer, ChefHat, User, IndianRupee, AlertCircle, KeyRound
+  Truck, XCircle, Timer, ChefHat, User, IndianRupee, AlertCircle, KeyRound,
+  Banknote, QrCode
 } from "lucide-react";
+import bharatpeQr from "@/assets/bharatpe-qr.jpeg";
 
 interface RiderOrdersProps {
   assignments: any[];
@@ -41,7 +43,6 @@ const RiderOrders = ({ assignments, onAccept, onDecline, onPickup, onDeliver }: 
 
   return (
     <div className="space-y-6">
-      {/* Incoming Orders */}
       {incoming.length > 0 && (
         <div className="space-y-3">
           <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-orange-600 flex items-center gap-2">
@@ -53,7 +54,6 @@ const RiderOrders = ({ assignments, onAccept, onDecline, onPickup, onDeliver }: 
         </div>
       )}
 
-      {/* Accepted - Navigate to Merchant */}
       {accepted.length > 0 && (
         <div className="space-y-3">
           <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-blue-600 flex items-center gap-2">
@@ -65,7 +65,6 @@ const RiderOrders = ({ assignments, onAccept, onDecline, onPickup, onDeliver }: 
         </div>
       )}
 
-      {/* Picked Up - Navigate to Customer */}
       {pickedUp.length > 0 && (
         <div className="space-y-3">
           <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-purple-600 flex items-center gap-2">
@@ -77,7 +76,6 @@ const RiderOrders = ({ assignments, onAccept, onDecline, onPickup, onDeliver }: 
         </div>
       )}
 
-      {/* No active orders */}
       {incoming.length === 0 && accepted.length === 0 && pickedUp.length === 0 && (
         <div className="text-center py-12 bg-card rounded-3xl shadow-card">
           <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
@@ -86,7 +84,6 @@ const RiderOrders = ({ assignments, onAccept, onDecline, onPickup, onDeliver }: 
         </div>
       )}
 
-      {/* Recent Completed */}
       {delivered.length > 0 && (
         <div className="space-y-3">
           <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-green-600 flex items-center gap-2">
@@ -109,7 +106,7 @@ const RiderOrders = ({ assignments, onAccept, onDecline, onPickup, onDeliver }: 
   );
 };
 
-/* Incoming Order Card with Accept/Decline */
+/* Incoming Order Card */
 const IncomingOrderCard = ({ assignment: a, onAccept, onDecline }: { assignment: any; onAccept: (id: string) => void; onDecline: (id: string) => void }) => {
   const [countdown, setCountdown] = useState(60);
 
@@ -145,7 +142,6 @@ const IncomingOrderCard = ({ assignment: a, onAccept, onDecline }: { assignment:
         </div>
       </div>
 
-      {/* Food Items */}
       <div className="bg-secondary/50 rounded-xl p-3 mb-3">
         <p className="text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
           <ChefHat className="w-3 h-3" /> ORDER ITEMS
@@ -162,7 +158,6 @@ const IncomingOrderCard = ({ assignment: a, onAccept, onDecline }: { assignment:
         </p>
       </div>
 
-      {/* Pickup Location */}
       <div className="bg-blue-50 rounded-xl p-3 mb-2">
         <p className="text-xs font-heading font-bold uppercase tracking-wider text-blue-600 flex items-center gap-1 mb-1">
           <ChefHat className="w-3 h-3" /> PICKUP FROM
@@ -176,7 +171,6 @@ const IncomingOrderCard = ({ assignment: a, onAccept, onDecline }: { assignment:
         )}
       </div>
 
-      {/* Drop Location */}
       <div className="bg-green-50 rounded-xl p-3 mb-3">
         <p className="text-xs font-heading font-bold uppercase tracking-wider text-green-600 flex items-center gap-1 mb-1">
           <MapPin className="w-3 h-3" /> DELIVER TO
@@ -190,14 +184,12 @@ const IncomingOrderCard = ({ assignment: a, onAccept, onDecline }: { assignment:
         )}
       </div>
 
-      {/* Delivery Notes */}
       {a.orders?.delivery_notes && (
         <div className="bg-yellow-50 rounded-xl p-2 mb-3">
           <p className="text-xs text-yellow-800">Note: {a.orders.delivery_notes}</p>
         </div>
       )}
 
-      {/* Accept / Decline Buttons */}
       <div className="flex gap-3">
         <Button
           onClick={() => onDecline(a.id)}
@@ -217,7 +209,7 @@ const IncomingOrderCard = ({ assignment: a, onAccept, onDecline }: { assignment:
   );
 };
 
-/* Active Delivery Card - Pickup or Deliver stage */
+/* Active Delivery Card */
 const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
   assignment: any;
   stage: "pickup" | "deliver";
@@ -225,11 +217,14 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
   onDeliver?: (id: string, otp: string) => void;
 }) => {
   const [otpInput, setOtpInput] = useState("");
+  const [showCollectCash, setShowCollectCash] = useState(false);
+  const [collectMethod, setCollectMethod] = useState<"cash" | "qr" | null>(null);
   const customer = a.orders?.customer;
   const merchant = a.orders?.merchant;
   const targetAddress = stage === "pickup" ? (merchant?.address || "Merchant location") : a.orders?.delivery_address;
   const targetName = stage === "pickup" ? (merchant?.full_name || "Merchant") : (customer?.full_name || "Customer");
   const targetPhone = stage === "pickup" ? merchant?.phone : customer?.phone;
+  const isCOD = a.orders?.payment_method === "cod";
 
   return (
     <div className={`bg-card rounded-2xl p-5 shadow-card border-l-4 ${stage === "pickup" ? "border-l-blue-500" : "border-l-purple-500"}`}>
@@ -247,12 +242,11 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
             <IndianRupee className="w-3 h-3" />{a.orders?.total_amount}
           </p>
           <p className="text-[10px] text-muted-foreground">
-            {a.orders?.payment_method === "cod" ? "COD" : "PAID"}
+            {isCOD ? "COD" : "PAID"}
           </p>
         </div>
       </div>
 
-      {/* Food Items */}
       <div className="bg-secondary/50 rounded-xl p-3 mb-3">
         <p className="text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground mb-1">ITEMS</p>
         {a.orders?.order_items?.map((item: any) => (
@@ -260,7 +254,6 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
         ))}
       </div>
 
-      {/* Target Location */}
       <div className="bg-secondary/50 rounded-xl p-3 mb-3 space-y-2">
         <p className="text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
           <MapPin className="w-3 h-3 text-primary" />
@@ -292,7 +285,6 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
         </div>
       </div>
 
-      {/* Customer info when in pickup stage */}
       {stage === "pickup" && customer && (
         <div className="bg-green-50 rounded-xl p-3 mb-3">
           <p className="text-xs font-heading font-bold uppercase tracking-wider text-green-600 flex items-center gap-1 mb-1">
@@ -303,14 +295,13 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
         </div>
       )}
 
-      {/* Delivery Notes */}
       {a.orders?.delivery_notes && (
         <div className="bg-yellow-50 rounded-xl p-2 mb-3">
           <p className="text-xs text-yellow-800">Note: {a.orders.delivery_notes}</p>
         </div>
       )}
 
-      {/* Action Button */}
+      {/* Action Buttons */}
       <div>
         {stage === "pickup" && onPickup && (
           <Button
@@ -322,6 +313,72 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
         )}
         {stage === "deliver" && onDeliver && (
           <div className="space-y-3">
+            {/* Collect Cash for COD orders */}
+            {isCOD && (
+              <div className="space-y-2">
+                {!showCollectCash ? (
+                  <Button
+                    onClick={() => setShowCollectCash(true)}
+                    className="w-full rounded-full font-heading font-bold text-xs uppercase tracking-wider bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    <Banknote className="w-4 h-4 mr-1" /> COLLECT CASH — ₹{a.orders?.total_amount}
+                  </Button>
+                ) : collectMethod === null ? (
+                  <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
+                    <p className="text-xs font-heading font-bold uppercase tracking-wider text-amber-700 mb-3 text-center">
+                      COLLECT ₹{a.orders?.total_amount} FROM CUSTOMER
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setCollectMethod("cash")}
+                        className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-amber-300 hover:bg-amber-100 transition-all"
+                      >
+                        <Banknote className="w-8 h-8 text-amber-700" />
+                        <span className="font-heading font-bold text-xs uppercase tracking-wider text-amber-800">CASH</span>
+                      </button>
+                      <button
+                        onClick={() => setCollectMethod("qr")}
+                        className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-amber-300 hover:bg-amber-100 transition-all"
+                      >
+                        <QrCode className="w-8 h-8 text-amber-700" />
+                        <span className="font-heading font-bold text-xs uppercase tracking-wider text-amber-800">QR / UPI</span>
+                      </button>
+                    </div>
+                    <button onClick={() => setShowCollectCash(false)} className="w-full text-center text-xs text-muted-foreground mt-2 uppercase tracking-wider">Cancel</button>
+                  </div>
+                ) : collectMethod === "qr" ? (
+                  <div className="bg-card border-2 border-primary/20 rounded-2xl p-4 text-center">
+                    <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary mb-3">
+                      SHOW QR TO CUSTOMER — ₹{a.orders?.total_amount}
+                    </p>
+                    <img src={bharatpeQr} alt="BharatPe QR Code" className="w-full max-w-[280px] mx-auto rounded-xl shadow-md mb-3" />
+                    <Button
+                      onClick={() => setCollectMethod(null)}
+                      variant="outline"
+                      className="rounded-full font-heading font-bold text-xs uppercase tracking-wider"
+                    >
+                      ← BACK
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4 text-center">
+                    <Banknote className="w-10 h-10 text-green-600 mx-auto mb-2" />
+                    <p className="text-xs font-heading font-bold uppercase tracking-wider text-green-700 mb-1">
+                      COLLECT ₹{a.orders?.total_amount} IN CASH
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mb-3">Make sure to count the amount before confirming</p>
+                    <Button
+                      onClick={() => setCollectMethod(null)}
+                      variant="outline"
+                      className="rounded-full font-heading font-bold text-xs uppercase tracking-wider"
+                    >
+                      ← BACK
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="bg-primary/5 border-2 border-dashed border-primary/30 rounded-xl p-4">
               <p className="text-xs font-heading font-bold uppercase tracking-wider text-primary flex items-center gap-1 mb-2">
                 <KeyRound className="w-3.5 h-3.5" /> ENTER DELIVERY OTP
@@ -338,9 +395,7 @@ const ActiveDeliveryCard = ({ assignment: a, stage, onPickup, onDeliver }: {
             </div>
             <Button
               onClick={() => {
-                if (otpInput.length !== 4) {
-                  return;
-                }
+                if (otpInput.length !== 4) return;
                 onDeliver(a.id, otpInput);
               }}
               disabled={otpInput.length !== 4}

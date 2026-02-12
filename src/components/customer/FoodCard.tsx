@@ -1,4 +1,4 @@
-import { Plus, Minus, Clock, Leaf } from "lucide-react";
+import { Plus, Minus, Clock, Leaf, Star } from "lucide-react";
 import foodBurger from "@/assets/food-burger.png";
 
 interface FoodCardProps {
@@ -11,20 +11,20 @@ interface FoodCardProps {
   preparation_time_mins?: number;
   is_available?: boolean;
   quantity?: number;
+  avgRating?: number | null;
+  ratingCount?: number;
   onAdd: (id: string) => void;
   onRemove: (id: string) => void;
 }
 
 const FoodCard = ({
   id, name, description, price, image_url, is_veg, preparation_time_mins, is_available = true,
-  quantity = 0, onAdd, onRemove,
+  quantity = 0, avgRating, ratingCount = 0, onAdd, onRemove,
 }: FoodCardProps) => {
   return (
     <div className={`bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-soft transition-all duration-300 group relative ${!is_available ? "opacity-50" : ""}`}>
-      {/* Decorative diamond */}
       <div className="absolute top-2 right-2 w-2 h-2 rotate-45 border border-primary/20 z-10" />
 
-      {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img
           src={image_url || foodBurger}
@@ -39,7 +39,6 @@ const FoodCard = ({
           </div>
         )}
 
-        {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-2">
           {is_veg && (
             <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 uppercase">
@@ -47,9 +46,19 @@ const FoodCard = ({
             </span>
           )}
         </div>
+
+        {/* Rating badge */}
+        {avgRating != null && avgRating > 0 && (
+          <div className="absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 shadow-sm">
+            <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+            <span className="text-[11px] font-heading font-bold">{avgRating.toFixed(1)}</span>
+            {ratingCount > 0 && (
+              <span className="text-[9px] text-muted-foreground">({ratingCount})</span>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Content */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="font-heading font-bold text-foreground uppercase tracking-wide text-sm leading-tight">{name}</h3>
