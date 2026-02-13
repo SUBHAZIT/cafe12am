@@ -25,6 +25,7 @@ const statusColors: Record<string, string> = {
   delivered: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
   payment_failed: "bg-red-100 text-red-700",
+  payment_processing: "bg-amber-100 text-amber-700",
 };
 
 const getTimeSince = (dateStr: string) => {
@@ -55,10 +56,16 @@ const CustomerOrders = () => {
         .eq("customer_id", profile.id)
         .order("created_at", { ascending: false });
       if (data) {
-        // Mark orders with failed online payment
+        // Map display status based on payment verification
         const processed = data.map(o => {
-          // Online payment orders that aren't explicitly paid = payment failed
-          if (o.payment_method !== "cod" && o.payment_status !== "paid" && o.status !== "cancelled") {
+          if (o.payment_method !== "cod" && o.status !== "cancelled") {
+            if (o.payment_status === "paid") {
+              return { ...o, _display_status: o.status };
+            }
+            if (o.payment_status === "processing" || o.payment_status === "awaiting") {
+              return { ...o, _display_status: "payment_processing" };
+            }
+            // failed or any other non-paid status
             return { ...o, _display_status: "payment_failed" };
           }
           return { ...o, _display_status: o.status };
@@ -188,6 +195,7 @@ const CustomerOrders = () => {
               const isActive = isActiveOrder(order);
               const isExpanded = expandedOrder === order.id;
               const isPaymentFailed = displayStatus === "payment_failed";
+              const isPaymentProcessing = displayStatus === "payment_processing";
 
               return (
                 <div
@@ -209,7 +217,7 @@ const CustomerOrders = () => {
                       </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-heading font-bold uppercase tracking-wider ${statusColors[displayStatus] || "bg-secondary text-foreground"}`}>
                         {(displayStatus === "cancelled" || isPaymentFailed) && <XCircle className="w-3 h-3 inline mr-1" />}
-                        {isPaymentFailed ? "PAYMENT FAILED" : displayStatus.replace(/_/g, " ")}
+                        {isPaymentFailed ? "PAYMENT FAILED" : isPaymentProcessing ? "PAYMENT PROCESSING" : displayStatus.replace(/_/g, " ")}
                       </span>
                     </div>
 
@@ -234,8 +242,17 @@ const CustomerOrders = () => {
                         </div>
                       )}
 
+                      {/* Payment processing message */}
+                      {isPaymentProcessing && (
+                        <div className="bg-amber-50 rounded-xl p-4 text-center">
+                          <Clock className="w-10 h-10 text-amber-500 mx-auto mb-2 animate-pulse" />
+                          <p className="font-heading font-bold text-sm text-amber-700 uppercase">PAYMENT PROCESSING</p>
+                          <p className="text-xs text-amber-600 mt-1">Your payment is being verified by the bank. This usually takes a few minutes.</p>
+                        </div>
+                      )}
+
                       {/* Tracking pipeline */}
-                      {order.status !== "cancelled" && !isPaymentFailed && (
+                      {order.status !== "cancelled" && !isPaymentFailed && !isPaymentProcessing && (
                         <div className="bg-secondary/50 rounded-xl p-4">
                           <p className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground mb-4">ORDER TRACKING</p>
                           <div className="flex items-center justify-between relative">
@@ -341,7 +358,7 @@ const CustomerOrders = () => {
                         <div>
                           <span className="font-heading font-bold text-sm uppercase tracking-wider">TOTAL</span>
                          <p className="text-[10px] text-muted-foreground uppercase">
-                            {order.payment_method === "cod" ? "💵 Cash on Delivery" : isPaymentFailed ? "❌ Payment Failed" : "✅ Paid Online"}
+                            {order.payment_method === "cod" ? "💵 Cash on Delivery" : isPaymentFailed ? "❌ Payment Failed" : isPaymentProcessing ? "⏳ Payment Processing" : "✅ Paid Online"}
                           </p>
                         </div>
                         <span className="font-heading font-bold text-primary text-xl">₹{order.total_amount}</span>

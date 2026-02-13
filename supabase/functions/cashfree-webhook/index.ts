@@ -39,16 +39,24 @@ serve(async (req) => {
     const orderStatus = order.order_status; // PAID, ACTIVE, EXPIRED, etc.
 
     let paymentStatus = 'pending';
+    let orderStatusUpdate: Record<string, string> = {};
     if (orderStatus === 'PAID') {
       paymentStatus = 'paid';
+      orderStatusUpdate = { payment_status: 'paid', status: 'placed' };
+    } else if (orderStatus === 'ACTIVE') {
+      paymentStatus = 'processing';
+      orderStatusUpdate = { payment_status: 'processing' };
     } else if (orderStatus === 'EXPIRED' || orderStatus === 'TERMINATED') {
       paymentStatus = 'failed';
+      orderStatusUpdate = { payment_status: 'failed', status: 'cancelled' };
+    } else {
+      orderStatusUpdate = { payment_status: paymentStatus };
     }
 
-    // Update order payment status
+    // Update order payment status and order status
     const { error } = await supabase
       .from('orders')
-      .update({ payment_status: paymentStatus })
+      .update(orderStatusUpdate)
       .eq('order_number', orderId);
 
     if (error) {

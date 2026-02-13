@@ -206,7 +206,7 @@ const CheckoutPage = () => {
     setApplying(false);
   };
 
-  const initiateCashfreePayment = async (orderId: string, orderNumber: string, amount: number) => {
+  const initiateCashfreePayment = async (orderId: string, orderNumber: string, amount: number): Promise<"paid" | "processing" | "failed"> => {
     try {
       const { data: sessionData, error: fnError } = await supabase.functions.invoke('cashfree-create-order', {
         body: {
@@ -231,22 +231,26 @@ const CheckoutPage = () => {
         redirectTarget: "_modal",
       });
 
-      if (result.error) {
-        toast({ title: "Payment failed", description: result.error.message, variant: "destructive" });
-        await supabase.from("orders").update({ payment_status: "failed", status: "cancelled" }).eq("id", orderId);
-        return false;
+      // After modal closes, verify payment status with Cashfree API
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke('cashfree-verify-payment', {
+        body: { order_id: orderNumber },
+      });
+
+      if (verifyError) {
+        console.error("Verification error:", verifyError);
+        // Fallback: if modal reported error, mark failed
+        if (result.error) {
+          return "failed";
+        }
+        return "processing";
       }
 
-      if (result.paymentDetails) {
-        await supabase.from("orders").update({ payment_status: "paid" }).eq("id", orderId);
-        return true;
-      }
-
-      return false;
+      const verifiedStatus = verifyData?.payment_status || "processing";
+      return verifiedStatus as "paid" | "processing" | "failed";
     } catch (err: any) {
       console.error("Cashfree payment error:", err);
       toast({ title: "Payment error", description: err.message, variant: "destructive" });
-      return false;
+      return "failed";
     }
   };
 
@@ -370,15 +374,20 @@ const CheckoutPage = () => {
 
       // If online payment, initiate Cashfree
       if (isOnlinePayment) {
-        const paymentSuccess = await initiateCashfreePayment(order.id, orderNumber, finalTotal);
-        if (!paymentSuccess) {
-          // Mark as failed
-          await supabase.from("orders").update({ payment_status: "failed", status: "cancelled" }).eq("id", order.id);
+        const paymentResult = await initiateCashfreePayment(order.id, orderNumber, finalTotal);
+        if (paymentResult === "failed") {
           toast({ title: "Payment failed", description: "Your order has been cancelled. Please try again.", variant: "destructive" });
           setPlacing(false);
           navigate("/order/orders");
           return;
         }
+        if (paymentResult === "processing") {
+          toast({ title: "Payment processing", description: "Your payment is being verified. Check back shortly." });
+          clearCart();
+          navigate("/order/orders");
+          return;
+        }
+        // paymentResult === "paid" — continue to success
       }
 
       // Send order confirmation email
