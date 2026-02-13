@@ -27,36 +27,56 @@ serve(async (req) => {
       });
     }
 
-    const { order } = data;
-    if (!order) {
-      return new Response(JSON.stringify({ success: false, message: 'No order in payload' }), {
+    const webhookType = payload.type || '';
+    const orderId = data.order?.order_id;
+    const paymentStatus = data.payment?.payment_status; // "SUCCESS", "FAILED", "USER_DROPPED", "NOT_ATTEMPTED"
+
+    if (!orderId) {
+      return new Response(JSON.stringify({ success: false, message: 'No order_id in payload' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const orderId = order.order_id;
-    const orderStatus = order.order_status; // PAID, ACTIVE, EXPIRED, etc.
+    let dbUpdate: Record<string, string> = {};
 
-    let paymentStatus = 'pending';
-    let orderStatusUpdate: Record<string, string> = {};
-    if (orderStatus === 'PAID') {
-      paymentStatus = 'paid';
-      orderStatusUpdate = { payment_status: 'paid', status: 'placed' };
-    } else if (orderStatus === 'ACTIVE') {
-      paymentStatus = 'processing';
-      orderStatusUpdate = { payment_status: 'processing' };
-    } else if (orderStatus === 'EXPIRED' || orderStatus === 'TERMINATED') {
-      paymentStatus = 'failed';
-      orderStatusUpdate = { payment_status: 'failed', status: 'cancelled' };
+    if (webhookType === 'PAYMENT_SUCCESS_WEBHOOK' || paymentStatus === 'SUCCESS') {
+      dbUpdate = { payment_status: 'paid', status: 'placed' };
+    } else if (webhookType === 'PAYMENT_FAILED_WEBHOOK' || paymentStatus === 'FAILED' || paymentStatus === 'USER_DROPPED') {
+      dbUpdate = { payment_status: 'failed', status: 'cancelled' };
+    } else if (webhookType === 'PAYMENT_CHARGES_WEBHOOK') {
+      // Settlement/charges webhook — don't downgrade an already-paid status
+      console.log(`Charges webhook for ${orderId}, skipping status update`);
+      return new Response(JSON.stringify({ success: true, skipped: 'charges_webhook' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     } else {
-      orderStatusUpdate = { payment_status: paymentStatus };
+      console.log(`Unknown webhook type: ${webhookType}, payment_status: ${paymentStatus}`);
+      return new Response(JSON.stringify({ success: true, skipped: 'unknown_type' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Update order payment status and order status
+    // Update order — but never downgrade from 'paid'
+    const { data: existingOrder } = await supabase
+      .from('orders')
+      .select('payment_status')
+      .eq('order_number', orderId)
+      .maybeSingle();
+
+    if (existingOrder?.payment_status === 'paid') {
+      console.log(`Order ${orderId} already paid, skipping webhook update`);
+      return new Response(JSON.stringify({ success: true, skipped: 'already_paid' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { error } = await supabase
       .from('orders')
-      .update(orderStatusUpdate)
+      .update(dbUpdate)
       .eq('order_number', orderId);
 
     if (error) {
