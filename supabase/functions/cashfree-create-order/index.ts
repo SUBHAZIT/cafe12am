@@ -52,7 +52,7 @@ serve(async (req) => {
         },
         order_meta: {
           return_url: return_url || '',
-          notify_url: '',
+          notify_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/cashfree-webhook`,
         },
       }),
     });

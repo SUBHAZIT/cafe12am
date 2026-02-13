@@ -542,6 +542,8 @@ const AdminPanel = () => {
                             <span className="text-xs uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-1">COD</span>
                           ) : o.payment_status === "paid" ? (
                             <span className="text-xs uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-1">PAID ✓</span>
+                          ) : o.payment_status === "processing" || o.payment_status === "awaiting" ? (
+                            <span className="text-xs uppercase tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full ml-1">PROCESSING</span>
                           ) : (
                             <span className="text-xs uppercase tracking-wider bg-red-100 text-red-700 px-2 py-0.5 rounded-full ml-1">PAY FAILED</span>
                           )}
