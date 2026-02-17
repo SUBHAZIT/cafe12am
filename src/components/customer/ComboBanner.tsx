@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Flame, Zap, ChevronRight, Sparkles } from "lucide-react";
+import { Flame, Zap, ChevronRight, Sparkles, Plus } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import CouponBanner from "./CouponBanner";
+import comboPizza from "@/assets/combo-pizza.png";
+import comboColddrink from "@/assets/combo-colddrink.png";
 
 interface Combo {
   id: string;
@@ -185,18 +187,22 @@ const ComboBanner = () => {
                       </div>
                     </div>
 
-                    {/* Right: One big food image */}
-                    {(thumbnails.length > 0 || combo.image_url) && (
-                      <div className="flex items-center justify-center w-[140px] flex-shrink-0">
-                        <div className="w-[130px] h-[130px] rounded-full overflow-hidden shadow-xl border-3 border-white/90 bg-white">
-                          <img
-                            src={thumbnails[0]?.menu_items?.image_url || combo.image_url || ""}
-                            alt={thumbnails[0]?.menu_items?.name || combo.name}
-                            className="w-full h-full object-cover scale-110"
-                          />
-                        </div>
+                    {/* Right: Pizza + Cold Drink with Plus icon */}
+                    <div className="flex items-center justify-center w-[150px] flex-shrink-0 gap-1">
+                      <img
+                        src={comboPizza}
+                        alt="Pizza"
+                        className="w-[70px] h-[70px] object-cover rounded-full shadow-lg border-2 border-white/80 drop-shadow-xl"
+                      />
+                      <div className="w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center flex-shrink-0">
+                        <Plus className="w-4 h-4 text-orange-500 font-bold" />
                       </div>
-                    )}
+                      <img
+                        src={comboColddrink}
+                        alt="Cold Drink"
+                        className="w-[70px] h-[70px] object-cover rounded-full shadow-lg border-2 border-white/80 drop-shadow-xl"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
