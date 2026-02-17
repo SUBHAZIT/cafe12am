@@ -13,7 +13,7 @@ interface Combo {
   combo_items: {
     id: string;
     quantity: number;
-    menu_items: { name: string; price: number } | null;
+    menu_items: { name: string; price: number; image_url: string | null } | null;
   }[];
 }
 
@@ -27,7 +27,7 @@ const ComboBanner = () => {
     const fetchCombos = async () => {
       const { data } = await supabase
         .from("combos")
-        .select("id, name, description, combo_price, image_url, combo_items(id, quantity, menu_items(name, price))")
+        .select("id, name, description, combo_price, image_url, combo_items(id, quantity, menu_items(name, price, image_url))")
         .eq("is_available", true)
         .order("created_at", { ascending: false });
       if (data) setCombos(data as any);
@@ -35,12 +35,11 @@ const ComboBanner = () => {
     fetchCombos();
   }, []);
 
-  // Auto-scroll
   useEffect(() => {
     if (combos.length <= 1) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % combos.length);
-    }, 3500);
+    }, 4000);
     return () => clearInterval(interval);
   }, [combos.length]);
 
@@ -55,30 +54,37 @@ const ComboBanner = () => {
 
   if (combos.length === 0) return <CouponBanner />;
 
-  const getOriginalPrice = (combo: Combo) => {
-    return combo.combo_items?.reduce(
-      (sum, ci) => sum + (ci.menu_items?.price || 0) * ci.quantity,
-      0
-    ) || 0;
-  };
+  const getOriginalPrice = (combo: Combo) =>
+    combo.combo_items?.reduce((sum, ci) => sum + (ci.menu_items?.price || 0) * ci.quantity, 0) || 0;
 
   const getSavings = (combo: Combo) => {
     const original = getOriginalPrice(combo);
     return original > combo.combo_price ? original - combo.combo_price : 0;
   };
 
-  const getItemNames = (combo: Combo) => {
-    return combo.combo_items
+  const getItemThumbnails = (combo: Combo) =>
+    combo.combo_items
+      ?.filter((ci) => ci.menu_items?.image_url)
+      .slice(0, 3) || [];
+
+  const getItemNames = (combo: Combo) =>
+    combo.combo_items
       ?.map((ci) => `${ci.quantity > 1 ? ci.quantity + "x " : ""}${ci.menu_items?.name || ""}`)
       .filter(Boolean)
       .join(" + ") || "";
-  };
 
   const gradients = [
     "from-orange-500 via-red-500 to-pink-500",
     "from-emerald-500 via-teal-500 to-cyan-500",
     "from-violet-500 via-purple-500 to-fuchsia-500",
     "from-amber-500 via-orange-500 to-red-500",
+  ];
+
+  const bgGradients = [
+    "from-orange-50 via-red-50 to-pink-50",
+    "from-emerald-50 via-teal-50 to-cyan-50",
+    "from-violet-50 via-purple-50 to-fuchsia-50",
+    "from-amber-50 via-orange-50 to-red-50",
   ];
 
   return (
@@ -106,75 +112,112 @@ const ComboBanner = () => {
             const savings = getSavings(combo);
             const originalPrice = getOriginalPrice(combo);
             const gradient = gradients[i % gradients.length];
+            const bgGradient = bgGradients[i % bgGradients.length];
+            const thumbnails = getItemThumbnails(combo);
 
             return (
               <div
                 key={combo.id}
-                className={`flex-shrink-0 w-[85vw] max-w-[380px] snap-center rounded-3xl overflow-hidden shadow-lg relative bg-gradient-to-br ${gradient} p-[2px]`}
+                className="flex-shrink-0 w-[92vw] max-w-[500px] snap-center rounded-3xl overflow-hidden shadow-lg relative"
               >
-                {/* Inner card */}
-                <div className="bg-card rounded-[22px] overflow-hidden h-full">
-                  {/* Top gradient strip with combo info */}
-                  <div className={`bg-gradient-to-r ${gradient} px-5 py-4 relative overflow-hidden`}>
-                    {/* Animated sparkle dots */}
-                    <div className="absolute top-2 right-4 w-2 h-2 bg-white/40 rounded-full animate-ping" />
-                    <div className="absolute bottom-3 right-12 w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
-                    <div className="absolute top-4 right-20 w-1 h-1 bg-white/50 rounded-full animate-bounce" />
+                {/* Full card with gradient bg */}
+                <div className={`bg-gradient-to-br ${bgGradient} relative overflow-hidden min-h-[220px]`}>
+                  {/* Decorative circles */}
+                  <div className="absolute top-[-20px] left-[-20px] w-24 h-24 rounded-full bg-primary/5" />
+                  <div className="absolute bottom-[-30px] left-[40%] w-32 h-32 rounded-full bg-primary/5" />
+                  <div className="absolute top-[60%] left-[20%] w-16 h-16 rounded-full bg-primary/5" />
+                  
+                  {/* Sparkle dots */}
+                  <div className="absolute top-8 left-[45%] w-1.5 h-1.5 bg-white/60 rounded-full animate-ping" />
+                  <div className="absolute bottom-12 right-[30%] w-1 h-1 bg-white/50 rounded-full animate-pulse" />
 
-                    <div className="flex items-start justify-between relative z-10">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <Sparkles className="w-4 h-4 text-yellow-200" />
-                          <span className="text-[10px] font-bold tracking-[0.2em] text-white/80 uppercase">
+                  <div className="flex h-full relative z-10 p-5">
+                    {/* Left: Text content */}
+                    <div className="flex-1 flex flex-col justify-between pr-3 min-h-[200px]">
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+                          <span className="text-[9px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
                             COMBO DEAL
                           </span>
                         </div>
-                        <h3 className="font-heading text-xl font-black text-white uppercase tracking-tight leading-tight">
+
+                        <h3 className="font-heading text-xl font-black text-foreground uppercase tracking-tight leading-tight mb-1">
                           {combo.name}
                         </h3>
+
                         {combo.description && (
-                          <p className="text-white/70 text-xs mt-1 line-clamp-1">{combo.description}</p>
+                          <p className="text-muted-foreground text-xs line-clamp-2 mb-2">{combo.description}</p>
                         )}
+
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide line-clamp-1 mb-3">
+                          {getItemNames(combo)}
+                        </p>
                       </div>
 
-                      {savings > 0 && (
-                        <div className="bg-yellow-400 text-black rounded-xl px-3 py-1.5 flex flex-col items-center ml-3 shadow-md animate-bounce" style={{ animationDuration: "2s" }}>
-                          <span className="text-[9px] font-bold uppercase tracking-wider leading-none">SAVE</span>
-                          <span className="text-lg font-black leading-none">₹{savings}</span>
+                      <div>
+                        <div className="flex items-baseline gap-2 mb-3">
+                          <span className="font-heading text-3xl font-black text-foreground">₹{combo.combo_price}</span>
+                          {originalPrice > combo.combo_price && (
+                            <span className="text-sm text-muted-foreground line-through">₹{originalPrice}</span>
+                          )}
+                          {savings > 0 && (
+                            <span className={`bg-gradient-to-r ${gradient} text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase`}>
+                              Save ₹{savings}
+                            </span>
+                          )}
                         </div>
-                      )}
+
+                        <button
+                          onClick={() => {
+                            addItem({
+                              id: combo.id,
+                              name: combo.name,
+                              price: combo.combo_price,
+                              image_url: combo.image_url || "",
+                            });
+                          }}
+                          className={`bg-gradient-to-r ${gradient} text-white font-heading font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-1.5 active:scale-95 w-fit`}
+                        >
+                          ORDER NOW
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Content */}
-                  <div className="px-5 py-4">
-                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2 uppercase tracking-wide">
-                      {getItemNames(combo)}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-heading text-2xl font-black text-foreground">₹{combo.combo_price}</span>
-                        {originalPrice > combo.combo_price && (
-                          <span className="text-sm text-muted-foreground line-through">₹{originalPrice}</span>
+                    {/* Right: Thumbnails stack */}
+                    {thumbnails.length > 0 && (
+                      <div className="flex flex-col gap-2.5 justify-center items-end w-[120px] flex-shrink-0">
+                        {thumbnails.map((ci, idx) => (
+                          <div
+                            key={ci.id}
+                            className="w-[100px] h-[80px] rounded-2xl overflow-hidden shadow-md border-2 border-white/80 bg-white"
+                            style={{
+                              transform: `rotate(${idx === 0 ? -2 : idx === 2 ? 2 : 0}deg)`,
+                            }}
+                          >
+                            <img
+                              src={ci.menu_items?.image_url || ""}
+                              alt={ci.menu_items?.name || ""}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                        {thumbnails.length === 0 && combo.image_url && (
+                          <div className="w-[100px] h-[100px] rounded-2xl overflow-hidden shadow-md border-2 border-white/80 bg-white">
+                            <img src={combo.image_url} alt={combo.name} className="w-full h-full object-cover" />
+                          </div>
                         )}
                       </div>
+                    )}
 
-                      <button
-                        onClick={() => {
-                          addItem({
-                            id: combo.id,
-                            name: combo.name,
-                            price: combo.combo_price,
-                            image_url: combo.image_url || "",
-                          });
-                        }}
-                        className={`bg-gradient-to-r ${gradient} text-white font-heading font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-1.5 active:scale-95`}
-                      >
-                        ORDER NOW
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {thumbnails.length === 0 && combo.image_url && (
+                      <div className="flex items-center justify-end w-[120px] flex-shrink-0">
+                        <div className="w-[110px] h-[110px] rounded-2xl overflow-hidden shadow-md border-2 border-white/80 bg-white">
+                          <img src={combo.image_url} alt={combo.name} className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
