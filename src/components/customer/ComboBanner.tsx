@@ -185,36 +185,15 @@ const ComboBanner = () => {
                       </div>
                     </div>
 
-                    {/* Right: Thumbnails stack */}
-                    {thumbnails.length > 0 && (
-                      <div className="flex flex-col gap-2.5 justify-center items-end w-[120px] flex-shrink-0">
-                        {thumbnails.map((ci, idx) => (
-                          <div
-                            key={ci.id}
-                            className="w-[100px] h-[80px] rounded-2xl overflow-hidden shadow-md border-2 border-white/80 bg-white"
-                            style={{
-                              transform: `rotate(${idx === 0 ? -2 : idx === 2 ? 2 : 0}deg)`,
-                            }}
-                          >
-                            <img
-                              src={ci.menu_items?.image_url || ""}
-                              alt={ci.menu_items?.name || ""}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                        {thumbnails.length === 0 && combo.image_url && (
-                          <div className="w-[100px] h-[100px] rounded-2xl overflow-hidden shadow-md border-2 border-white/80 bg-white">
-                            <img src={combo.image_url} alt={combo.name} className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {thumbnails.length === 0 && combo.image_url && (
-                      <div className="flex items-center justify-end w-[120px] flex-shrink-0">
-                        <div className="w-[110px] h-[110px] rounded-2xl overflow-hidden shadow-md border-2 border-white/80 bg-white">
-                          <img src={combo.image_url} alt={combo.name} className="w-full h-full object-cover" />
+                    {/* Right: One big food image */}
+                    {(thumbnails.length > 0 || combo.image_url) && (
+                      <div className="flex items-center justify-center w-[140px] flex-shrink-0">
+                        <div className="w-[130px] h-[130px] rounded-full overflow-hidden shadow-xl border-3 border-white/90 bg-white">
+                          <img
+                            src={thumbnails[0]?.menu_items?.image_url || combo.image_url || ""}
+                            alt={thumbnails[0]?.menu_items?.name || combo.name}
+                            className="w-full h-full object-cover scale-110"
+                          />
                         </div>
                       </div>
                     )}
