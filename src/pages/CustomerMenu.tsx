@@ -10,6 +10,7 @@ import { useOperatingHours } from "@/hooks/useOperatingHours";
 import { Search, Sparkles } from "lucide-react";
 import TobaccoBanner from "@/components/customer/TobaccoBanner";
 import CouponBanner from "@/components/customer/CouponBanner";
+import ComboBanner from "@/components/customer/ComboBanner";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import foodBurger from "@/assets/food-burger.png";
@@ -139,6 +140,8 @@ const CustomerMenu = () => {
       </div>
 
       <CategoryBar selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
+
+      <ComboBanner />
 
       {selectedCategory === "Paan Corner" && !tobaccoVerified && (
         <TobaccoBanner onConfirmed={() => setTobaccoVerified(true)} />
